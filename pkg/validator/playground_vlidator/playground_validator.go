@@ -1,0 +1,52 @@
+package playground_validator
+
+import (
+	"regexp"
+
+	"github.com/go-playground/validator/v10"
+	"github.com/hexley21/soccer-manager/pkg/logger"
+)
+
+type playgroundValidator struct {
+	validator *validator.Validate
+}
+
+func New(logger logger.Logger) *playgroundValidator {
+	validate := validator.New()
+
+	if err := validate.RegisterValidation("password", passwordValidator); err != nil {
+		logger.Fatalf("failed to register password validator: %v", err)
+	}
+
+	if err := validate.RegisterValidation("username", usernameValidator); err != nil {
+		logger.Fatalf("failed to register username validator: %v", err)
+	}
+
+	return &playgroundValidator{validator: validate}
+}
+
+func (v *playgroundValidator) Validate(i any) error {
+	err := v.validator.Struct(i)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (v *playgroundValidator) ValidateVar(i any, tag string) error {
+	err := v.validator.Var(i, tag)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func passwordValidator(fl validator.FieldLevel) bool {
+	return regexp.MustCompile(`^[\x21-\x7E]{8,36}$`).MatchString(fl.Field().String())
+}
+
+func usernameValidator(fl validator.FieldLevel) bool {
+	return regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_]{3,15}$`).MatchString(fl.Field().String())
+}

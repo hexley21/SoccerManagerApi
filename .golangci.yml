@@ -1,0 +1,90 @@
+version: "2"
+
+run:
+  allow-parallel-runners: true
+  allow-serial-runners: true
+  concurrency: 4
+
+linters:
+  enable:
+  - gocyclo
+  - bidichk
+  - decorder
+  - dupword
+  - errname
+  - errorlint
+  - gosec
+  - makezero
+  - misspell
+  - nilnil
+  - noctx
+  - bodyclose
+  - prealloc
+  - predeclared
+  - unparam
+  - whitespace
+  - asasalint
+  - asciicheck
+  - containedctx
+  - contextcheck
+  - durationcheck
+  - gochecknoglobals
+  - goconst
+  - gocritic
+  - nestif
+  - nilerr
+  - wrapcheck
+  - copyloopvar
+  - intrange
+  disable:
+  - composites
+
+  settings:
+    gocyclo:
+      min-complexity: 15
+    wrapcheck:
+      ignore-sig-regexps:
+        - 'func \(github\.com/labstack/echo/..\.Context\)\.*' # ignore echo.Context methods
+    varnamelen:
+      ignore-names:
+        - err
+        - ip
+        - ctx
+        - v
+        - st
+        - r
+        - to
+        - from
+        - c
+      ignore-decls:
+        - c echo.Context
+        - t testing.T
+        - f *foo.Bar
+        - e error
+        - i int
+        - const C
+        - T any
+        - m map[string]int  
+        - w http.ResponseWriter
+        - r *http.Request
+        - r http.ResponseWriter
+        - w io.Writer
+        - r io.Reader
+        - v any
+            
+  exclusions:
+    rules:
+      - path: '(.+)_test\.go'
+        linters:
+          - goconst
+          - errcheck
+          - gosec
+          - revive 
+          - nestif
+          - err113
+
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - golines
