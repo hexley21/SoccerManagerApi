@@ -1,6 +1,20 @@
+postgres:
+  host: db-sm
+  db_name: sm
+  port: 5432
+  max-connections: 50
+  min-connections: 10
+  max-conn-lifetime: 180s
+  max-conn-idle-time: 60s
+  healthcheck-period: 60s
+  version: 2
+
 argon2:
   salt_len: 16
   key_len: 79
   time: 1
   memory: 47104
   threads: 1
+
+globe:
+  ttl: 12h

@@ -4,6 +4,7 @@ import (
 	"regexp"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/hexley21/soccer-manager/internal/soccer-manager/domain"
 	"github.com/hexley21/soccer-manager/pkg/logger"
 )
 
@@ -20,6 +21,14 @@ func New(logger logger.Logger) *playgroundValidator {
 
 	if err := validate.RegisterValidation("username", usernameValidator); err != nil {
 		logger.Fatalf("failed to register username validator: %v", err)
+	}
+
+	if err := validate.RegisterValidation("localecode", localeCodeValidator); err != nil {
+		logger.Fatalf("failed to register localecode validator: %v", err)
+	}
+
+	if err := validate.RegisterValidation("countrycode", countryCodeValidator); err != nil {
+		logger.Fatalf("failed to register countrycode validator: %v", err)
 	}
 
 	return &playgroundValidator{validator: validate}
@@ -49,4 +58,12 @@ func passwordValidator(fl validator.FieldLevel) bool {
 
 func usernameValidator(fl validator.FieldLevel) bool {
 	return regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_]{3,15}$`).MatchString(fl.Field().String())
+}
+
+func localeCodeValidator(fl validator.FieldLevel) bool {
+	return domain.LocaleCode(fl.Field().String()).Valid()
+}
+
+func countryCodeValidator(fl validator.FieldLevel) bool {
+	return domain.CountryCode(fl.Field().String()).Valid()
 }

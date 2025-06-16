@@ -19,6 +19,7 @@ type (
 		Metrics    Metrics    `yaml:"metrics"`
 		JWT        JWT        `yaml:"jwt"`
 		Pagination Pagination `yaml:"pagination"`
+		Globe      Globe      `yaml:"globe"`
 		Argon2     Argon2     `yaml:"argon2"`
 		Logging    Logging    `yaml:"logging"`
 	}
@@ -35,6 +36,10 @@ type (
 		IdleTimeout  time.Duration `yaml:"idle_timeout"`
 		ReadTimeout  time.Duration `yaml:"read_timeout"`
 		WriteTimeout time.Duration `yaml:"write_timeout"`
+	}
+
+	Globe struct {
+		TTL time.Duration `yaml:"ttl"`
 	}
 
 	Postgres struct {

@@ -10,9 +10,11 @@ import (
 
 	"github.com/bwmarrin/snowflake"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/delivery"
+	"github.com/hexley21/soccer-manager/internal/soccer-manager/delivery/http/v1"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/jwt/access"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/jwt/refresh"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/repository"
+	"github.com/hexley21/soccer-manager/internal/soccer-manager/server/middleware"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/service"
 	"github.com/hexley21/soccer-manager/pkg/config"
 	"github.com/hexley21/soccer-manager/pkg/hasher"
@@ -70,16 +72,15 @@ func NewServer(
 	metricsRouter.Logger = logger
 	metricsRouter.JSONSerializer = jsoniter_json.NewEcho(jsonProcessor)
 
-	userRepo := repository.NewUserRepo(dbPool, snowflakeNode)
+	globeRepo := repository.NewGlobeRepo(dbPool, cfg.Globe.TTL)
+
+	services := delivery.Services{
+		GlobeService: service.NewGlobeService(globeRepo),
+	}
 
 	jwtManagers := delivery.JWTManagers{
 		Access:  access.NewManager(cfg.JWT.Access),
 		Refresh: refresh.NewManager(cfg.JWT.Refresh),
-	}
-
-	services := delivery.Services{
-		AuthService: service.NewAuthService(userRepo, hasher),
-		UserService: service.NewUserService(userRepo, hasher),
 	}
 
 	return &Server{
@@ -113,9 +114,22 @@ func (s *Server) Run() error {
 			echo.HeaderContentType,
 			echo.HeaderAccept,
 			echo.HeaderAuthorization,
+			"Accept-Language",
 		},
 	}))
 	s.router.Use(echo_middleware.Recover())
+
+	middlewares := delivery.Middlewares{
+		IsAdmin:        middleware.IsAdmin(),
+		AcceptLanguage: middleware.AcceptLanguage(),
+	}
+
+	apiGroup := s.router.Group("/api")
+
+	v1Group := apiGroup.Group("/v1")
+	v1Group.Use(middleware.JWTAuth("/api/v1", s.JWTManagers.Access))
+
+	v1.RegisterRoutes(v1Group, s.Components, &middlewares)
 
 	s.metricsRouter.GET("/metrics", echoprometheus.NewHandler())
 
@@ -137,7 +151,6 @@ func (s *Server) Close() error {
 	var mu sync.Mutex
 
 	ctx, cancel := context.WithTimeout(context.Background(), s.Cfg.Server.ShutdownTimeout)
-
 	var wg sync.WaitGroup
 
 	wg.Add(3)
@@ -155,8 +168,7 @@ func (s *Server) Close() error {
 		cancel()
 	}()
 
-	select {
-	case <-ctx.Done():
+	for range ctx.Done() {
 		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
 			return errors.Join(
 				closeErrs,

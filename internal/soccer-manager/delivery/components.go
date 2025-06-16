@@ -18,8 +18,7 @@ type JWTManagers struct {
 }
 
 type Services struct {
-	AuthService service.AuthService
-	UserService service.UserService
+	GlobeService service.GlobeService
 }
 
 type Components struct {
@@ -36,5 +35,6 @@ type Components struct {
 }
 
 type Middlewares struct {
-	IsAdmin echo.MiddlewareFunc
+	IsAdmin        echo.MiddlewareFunc
+	AcceptLanguage echo.MiddlewareFunc
 }
