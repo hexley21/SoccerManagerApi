@@ -38,6 +38,7 @@ linters:
   - intrange
   disable:
   - composites
+  - S1000
 
   settings:
     gocyclo:

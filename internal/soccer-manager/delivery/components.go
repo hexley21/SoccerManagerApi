@@ -19,6 +19,11 @@ type JWTManagers struct {
 
 type Services struct {
 	GlobeService service.GlobeService
+
+	AuthService service.AuthService
+	UserService service.UserService
+
+	PlayerPosService service.PlayerPositionService
 }
 
 type Components struct {

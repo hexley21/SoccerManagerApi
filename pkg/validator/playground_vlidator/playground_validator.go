@@ -23,6 +23,14 @@ func New(logger logger.Logger) *playgroundValidator {
 		logger.Fatalf("failed to register username validator: %v", err)
 	}
 
+	if err := validate.RegisterValidation("userrole", userRoleValidator); err != nil {
+		logger.Fatalf("failed to register userrole validator: %v", err)
+	}
+
+	if err := validate.RegisterValidation("playerpos", playerPositionCodeValidator); err != nil {
+		logger.Fatalf("failed to register playerpos validator: %v", err)
+	}
+
 	if err := validate.RegisterValidation("localecode", localeCodeValidator); err != nil {
 		logger.Fatalf("failed to register localecode validator: %v", err)
 	}
@@ -58,6 +66,14 @@ func passwordValidator(fl validator.FieldLevel) bool {
 
 func usernameValidator(fl validator.FieldLevel) bool {
 	return regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_]{3,15}$`).MatchString(fl.Field().String())
+}
+
+func userRoleValidator(fl validator.FieldLevel) bool {
+	return domain.UserRole(fl.Field().String()).Valid()
+}
+
+func playerPositionCodeValidator(fl validator.FieldLevel) bool {
+	return domain.PlayerPositionCode(fl.Field().String()).Valid()
 }
 
 func localeCodeValidator(fl validator.FieldLevel) bool {

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/bwmarrin/snowflake"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/delivery"
@@ -72,10 +73,17 @@ func NewServer(
 	metricsRouter.Logger = logger
 	metricsRouter.JSONSerializer = jsoniter_json.NewEcho(jsonProcessor)
 
+	userRepo := repository.NewUserRepo(dbPool, snowflakeNode)
 	globeRepo := repository.NewGlobeRepo(dbPool, cfg.Globe.TTL)
+	playerPosRepo := repository.NewPlayerPositionRepo(dbPool)
 
 	services := delivery.Services{
 		GlobeService: service.NewGlobeService(globeRepo),
+
+		AuthService: service.NewAuthService(userRepo, hasher),
+		UserService: service.NewUserService(userRepo, hasher),
+
+		PlayerPosService: service.NewPlayerPositionService(playerPosRepo),
 	}
 
 	jwtManagers := delivery.JWTManagers{
@@ -159,6 +167,7 @@ func (s *Server) Close() error {
 	go shutdownServer(ctx, &wg, &mu, s.metricsMux, "metrics", &closeErrs)
 
 	go func() {
+		time.Sleep(time.Hour)
 		s.DbPool.Close()
 		wg.Done()
 	}()
@@ -168,7 +177,8 @@ func (s *Server) Close() error {
 		cancel()
 	}()
 
-	for range ctx.Done() {
+	select {
+	case <-ctx.Done():
 		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
 			return errors.Join(
 				closeErrs,

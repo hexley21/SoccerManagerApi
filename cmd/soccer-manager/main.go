@@ -80,7 +80,7 @@ func main() {
 	server := server.NewServer(cfg, zapLogger, validator, snowflakeNode, hasher, pgPool)
 
 	shutCtx, shutCancel := context.WithCancelCause(context.Background())
-	go shutdown.NotifyShutdown(shutCtx, shutCancel, zapLogger, server)
+	go shutdown.NotifyShutdown(shutCancel, zapLogger, server)
 
 	zapLogger.Info("Tracker started...")
 	if err := server.Run(); err != nil {
@@ -91,9 +91,9 @@ func main() {
 	// the closer func passed to a notify shutdown has a timeout
 	select {
 	case <-shutCtx.Done():
-		err := context.Cause(shutCtx)
-		if !errors.Is(err, context.Canceled) {
-			zapLogger.Error("Shutdown error:", err)
+		cause := context.Cause(shutCtx)
+		if cause != nil {
+			zapLogger.Errorf("Shutdown error: %v", cause)
 		}
 	}
 
