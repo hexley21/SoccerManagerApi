@@ -27,10 +27,18 @@ CREATE TABLE users (
 CREATE TABLE teams (
   id             BIGINT PRIMARY KEY NOT NULL,
   user_id        BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name           VARCHAR(63) NOT NULL,
   country_code   VARCHAR(2) REFERENCES countries(code),
   budget         NUMERIC(15,2) NOT NULL CHECK (budget >= 0),
   total_players  INT NOT NULL DEFAULT 0,
   UNIQUE(user_id)
+);
+
+CREATE TABLE team_translations (
+  team_id    BIGINT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+  locale     VARCHAR(2) NOT NULL REFERENCES locales(code),
+  name       VARCHAR(63) NOT NULL,
+  PRIMARY KEY (team_id, locale)
 );
 
 CREATE TABLE players (
@@ -41,16 +49,6 @@ CREATE TABLE players (
   position_code VARCHAR(3) NOT NULL REFERENCES positions(code),
   price         NUMERIC(12,2) NOT NULL CHECK (price >= 0)
 );
-
-CREATE TABLE player_translations (
-  id         BIGINT PRIMARY KEY NOT NULL,
-  player_id  BIGINT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
-  locale     VARCHAR(2) NOT NULL REFERENCES locales(code),
-  first_name VARCHAR(30) NOT NULL,
-  last_name  VARCHAR(30) NOT NULL,
-  UNIQUE (player_id, locale)
-);
-CREATE INDEX idx_player_translations_player_id ON player_translations(player_id);
 
 CREATE TABLE transfer_lists (
   id             BIGINT PRIMARY KEY NOT NULL,

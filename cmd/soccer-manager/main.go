@@ -89,12 +89,12 @@ func main() {
 
 	// this is safe, program won't hang forever
 	// the closer func passed to a notify shutdown has a timeout
-	select {
-	case <-shutCtx.Done():
-		cause := context.Cause(shutCtx)
-		if cause != nil {
-			zapLogger.Errorf("Shutdown error: %v", cause)
-		}
+	<-shutCtx.Done()
+	
+	cause := context.Cause(shutCtx)
+	if cause != nil &&
+		!(errors.Is(cause, context.Canceled) || errors.Is(cause, context.DeadlineExceeded)) {
+		zapLogger.Errorf("Shutdown error: %v", cause)
 	}
 
 	zapLogger.Info("Soccer manager stopped...")

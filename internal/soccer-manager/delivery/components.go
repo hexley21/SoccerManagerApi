@@ -24,6 +24,7 @@ type Services struct {
 	UserService service.UserService
 
 	PlayerPosService service.PlayerPositionService
+	TeamService      service.TeamService
 }
 
 type Components struct {
@@ -40,6 +41,7 @@ type Components struct {
 }
 
 type Middlewares struct {
+	JWTMiddleware  echo.MiddlewareFunc
 	IsAdmin        echo.MiddlewareFunc
 	AcceptLanguage echo.MiddlewareFunc
 }

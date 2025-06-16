@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"sync"
-	"time"
 
 	"github.com/bwmarrin/snowflake"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/delivery"
@@ -77,6 +76,9 @@ func NewServer(
 	globeRepo := repository.NewGlobeRepo(dbPool, cfg.Globe.TTL)
 	playerPosRepo := repository.NewPlayerPositionRepo(dbPool)
 
+	teamRepo := repository.NewTeamRepository(dbPool, snowflakeNode)
+	teamTranslationRepo := repository.NewTeamTranslationsRepository(dbPool)
+
 	services := delivery.Services{
 		GlobeService: service.NewGlobeService(globeRepo),
 
@@ -84,6 +86,8 @@ func NewServer(
 		UserService: service.NewUserService(userRepo, hasher),
 
 		PlayerPosService: service.NewPlayerPositionService(playerPosRepo),
+
+		TeamService: service.NewTeamService(teamRepo, teamTranslationRepo),
 	}
 
 	jwtManagers := delivery.JWTManagers{
@@ -128,6 +132,7 @@ func (s *Server) Run() error {
 	s.router.Use(echo_middleware.Recover())
 
 	middlewares := delivery.Middlewares{
+		JWTMiddleware: middleware.JWTAuth(s.JWTManagers.Access),
 		IsAdmin:        middleware.IsAdmin(),
 		AcceptLanguage: middleware.AcceptLanguage(),
 	}
@@ -135,7 +140,7 @@ func (s *Server) Run() error {
 	apiGroup := s.router.Group("/api")
 
 	v1Group := apiGroup.Group("/v1")
-	v1Group.Use(middleware.JWTAuth("/api/v1", s.JWTManagers.Access))
+	v1Group.Use()
 
 	v1.RegisterRoutes(v1Group, s.Components, &middlewares)
 
@@ -167,7 +172,6 @@ func (s *Server) Close() error {
 	go shutdownServer(ctx, &wg, &mu, s.metricsMux, "metrics", &closeErrs)
 
 	go func() {
-		time.Sleep(time.Hour)
 		s.DbPool.Close()
 		wg.Done()
 	}()
@@ -177,14 +181,13 @@ func (s *Server) Close() error {
 		cancel()
 	}()
 
-	select {
-	case <-ctx.Done():
-		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
-			return errors.Join(
-				closeErrs,
-				fmt.Errorf("shutdown timed out after %v", s.Cfg.Server.ShutdownTimeout),
-			)
-		}
+	<-ctx.Done()
+
+	if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+		closeErrs = errors.Join(
+			closeErrs,
+			fmt.Errorf("shutdown timed out after %v", s.Cfg.Server.ShutdownTimeout),
+		)
 	}
 
 	return closeErrs

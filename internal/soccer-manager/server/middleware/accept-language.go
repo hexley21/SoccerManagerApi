@@ -16,11 +16,8 @@ func AcceptLanguage() echo.MiddlewareFunc {
 				loc := domain.LocaleCode(tag[0].String())
 				if loc.Valid() {
 					c.Set(domain.LocaleCtxKey, loc)
-					return next(c)
 				}
 			}
-
-			c.Set(domain.LocaleCtxKey, domain.LocaleCode("en"))
 
 			return next(c)
 		}

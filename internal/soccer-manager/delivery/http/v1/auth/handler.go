@@ -206,7 +206,7 @@ func (h *handler) Refresh(c echo.Context) error {
 
 	return c.JSON(
 		http.StatusOK,
-		common.NewApiResponse(RefreshResponseDTO{AccessToken: accessToken}),
+		common.NewApiResponse(refreshResponseDTO{AccessToken: accessToken}),
 	)
 }
 

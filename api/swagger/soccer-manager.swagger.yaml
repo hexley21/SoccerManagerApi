@@ -1,0 +1,976 @@
+basePath: /api
+definitions:
+  ApiResponse:
+    properties:
+      data: {}
+    type: object
+  CreatePlayerPositionTranslationRequest:
+    properties:
+      code:
+        $ref: '#/definitions/PlayerPositionCode'
+      label:
+        maxLength: 30
+        minLength: 2
+        type: string
+      locale:
+        type: string
+    required:
+    - code
+    - label
+    - locale
+    type: object
+  CreateTeamTranslationRequest:
+    properties:
+      label:
+        type: string
+      locale:
+        type: string
+    required:
+    - label
+    - locale
+    type: object
+  DeleteTeamTranslationRequest:
+    properties:
+      locale:
+        type: string
+    required:
+    - locale
+    type: object
+  DeletelayerPositionTranslationRequest:
+    properties:
+      code:
+        $ref: '#/definitions/PlayerPositionCode'
+      locale:
+        type: string
+    required:
+    - code
+    - locale
+    type: object
+  LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  LoginResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+  PlayerPositionCode:
+    enum:
+    - GLK
+    - DEF
+    - MID
+    - ATK
+    type: string
+    x-enum-varnames:
+    - PlayerPositionCodeGLK
+    - PlayerPositionCodeDEF
+    - PlayerPositionCodeMID
+    - PlayerPositionCodeATK
+  PlayerPositionsResponse:
+    additionalProperties:
+      type: string
+    type: object
+  PlayerPositionsWithLocalesResponse:
+    additionalProperties:
+      additionalProperties:
+        type: string
+      type: object
+    type: object
+  RefreshResponse:
+    properties:
+      access_token:
+        type: string
+    type: object
+  RegisterRequest:
+    properties:
+      password:
+        type: string
+      role:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - role
+    - username
+    type: object
+  RegisterResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+  TeamResponse:
+    properties:
+      budget:
+        type: string
+      country_code:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      total_players:
+        type: integer
+      user_id:
+        type: string
+    type: object
+  UpdatePasswordRequest:
+    properties:
+      new_password:
+        type: string
+      old_password:
+        type: string
+    required:
+    - new_password
+    - old_password
+    type: object
+  UpdatePlayerPositionTranslationRequest:
+    properties:
+      code:
+        $ref: '#/definitions/PlayerPositionCode'
+      label:
+        maxLength: 30
+        minLength: 2
+        type: string
+      locale:
+        type: string
+    required:
+    - code
+    - label
+    - locale
+    type: object
+  UpdateTeamCountryRequest:
+    properties:
+      country_code:
+        type: string
+    required:
+    - country_code
+    type: object
+  UserResponse:
+    properties:
+      id:
+        type: string
+      role:
+        type: string
+      username:
+        type: string
+    type: object
+  domain.TeamTranslation:
+    additionalProperties:
+      type: string
+    type: object
+  echo.HTTPError:
+    properties:
+      message: {}
+    type: object
+  updateTeamTranslationRequest:
+    properties:
+      label:
+        type: string
+      locale:
+        type: string
+    required:
+    - label
+    - locale
+    type: object
+host: localhost:80
+info:
+  contact: {}
+  description: Soccer manager api
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Soccer Manager
+  version: 1.0.0-alpha0
+paths:
+  /v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates user with username and password and returns JWT
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/LoginResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Login user
+      tags:
+      - auth
+  /v1/auth/logout:
+    post:
+      description: Logs out user by invalidating refresh token cookie
+      responses:
+        "204":
+          description: No Content
+      summary: Logout user
+      tags:
+      - auth
+  /v1/auth/refresh:
+    post:
+      description: Get a new access token using refresh token from cookie
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/RefreshResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Refresh access token
+      tags:
+      - auth
+  /v1/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user account and returns JWT tokens
+      parameters:
+      - description: Registration details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/RegisterResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Register new user
+      tags:
+      - auth
+  /v1/globe/countries:
+    get:
+      description: Get all available countries
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    type: string
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: List Countries
+      tags:
+      - globe
+  /v1/globe/locales:
+    get:
+      description: Get all available locales
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    type: string
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: List locales
+      tags:
+      - globe
+  /v1/player-positions:
+    get:
+      description: Returns a list of player positions, optionally translated by locale
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/PlayerPositionsResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: List player positions (localized)
+      tags:
+      - player-positions
+  /v1/player-positions/codes:
+    get:
+      description: Returns a list of all available player position codes
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    type: string
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: List position codes
+      tags:
+      - player-positions
+  /v1/player-positions/translations:
+    delete:
+      description: Deletes a specific player position translation by code and locale
+      parameters:
+      - description: Translation delete details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/DeletelayerPositionTranslationRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - AccessToken: []
+      summary: Delete translation
+      tags:
+      - player-positions
+    get:
+      description: Returns all translations of player positions for all locales
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/PlayerPositionsWithLocalesResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: List all translations
+      tags:
+      - player-positions
+    post:
+      consumes:
+      - application/json
+      description: Creates a new player position translation for a given code and
+        locale
+      parameters:
+      - description: Translation details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/CreatePlayerPositionTranslationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - AccessToken: []
+      summary: Create translation
+      tags:
+      - player-positions
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing player position translation
+      parameters:
+      - description: Updated translation details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/UpdatePlayerPositionTranslationRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - AccessToken: []
+      summary: Update translation
+      tags:
+      - player-positions
+  /v1/teams:
+    get:
+      description: Returns a paginated list of teams
+      parameters:
+      - description: Pagination cursor
+        in: query
+        name: cursor
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/TeamResponse'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: List teams
+      tags:
+      - team
+  /v1/teams/{team_id}:
+    get:
+      description: Returns a single team's data by ID
+      parameters:
+      - description: Team ID
+        in: path
+        name: team_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/TeamResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get team by ID
+      tags:
+      - team
+  /v1/teams/{team_id}/locales:
+    get:
+      description: Returns a list of available translation locales
+      parameters:
+      - description: Team ID
+        in: path
+        name: team_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/TeamResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get available locales for team by ID
+      tags:
+      - team
+  /v1/teams/me/translations:
+    delete:
+      description: Deletes a team translation for the authenticated user's team
+      parameters:
+      - description: Delete details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/DeleteTeamTranslationRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - AccessToken: []
+      summary: Delete team translation
+      tags:
+      - team
+    get:
+      description: Returns translations for the authenticated user's team
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/domain.TeamTranslation'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - AccessToken: []
+      summary: List translations
+      tags:
+      - team
+    post:
+      consumes:
+      - application/json
+      description: Creates a new translation for the authenticated user's team
+      parameters:
+      - description: Translation details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/CreateTeamTranslationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - AccessToken: []
+      summary: Create team translation
+      tags:
+      - team
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing translation for the authenticated user's team
+      parameters:
+      - description: Translation details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/updateTeamTranslationRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - AccessToken: []
+      summary: Update team translation
+      tags:
+      - team
+  /v1/teams/me/update-country:
+    put:
+      consumes:
+      - application/json
+      description: Updates the country of the authenticated user's team
+      parameters:
+      - description: Country code
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/UpdateTeamCountryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - AccessToken: []
+      summary: Update team's country
+      tags:
+      - team
+  /v1/users:
+    get:
+      description: Get a paginated list of users
+      parameters:
+      - description: Pagination cursor
+        in: query
+        name: cursor
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/UserResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - AccessToken: []
+      summary: List users (ADMIN)
+      tags:
+      - users
+  /v1/users/{user_id}/team:
+    get:
+      description: Returns a single team by user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/TeamResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get team by user ID
+      tags:
+      - team
+  /v1/users/me:
+    delete:
+      description: Delete the authenticated user's account
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - AccessToken: []
+      summary: Delete current user
+      tags:
+      - users
+    get:
+      description: Get the authenticated user's data
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/UserResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - AccessToken: []
+      summary: Get current user
+      tags:
+      - users
+  /v1/users/me/change-password:
+    put:
+      consumes:
+      - application/json
+      description: Change the authenticated user's password
+      parameters:
+      - description: Password update details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/UpdatePasswordRequest'
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - AccessToken: []
+      summary: Change current user's password
+      tags:
+      - users
+schemes:
+- http
+securityDefinitions:
+  AccessToken:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

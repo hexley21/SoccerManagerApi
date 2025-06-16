@@ -13,22 +13,9 @@ import (
 // If the token is valid, it adds user data to the request context.
 //
 // It skips the middleware for all GET and non administrative requests.
-func JWTAuth(prefix string, jwtManager access.Manager) echo.MiddlewareFunc {
-	userPrefix := prefix + "/users"
-	authPrefix := prefix + "/auth"
+func JWTAuth(jwtManager access.Manager) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			// Skip for all GET & not /users requests
-			if c.Request().Method == "GET" &&
-				!strings.HasPrefix(c.Request().URL.Path, userPrefix) {
-				return next(c)
-			}
-
-			// Skip for /auth requests
-			if strings.HasPrefix(c.Request().URL.Path, authPrefix) {
-				return next(c)
-			}
-
 			// get token from header
 			token := c.Request().Header.Get("Authorization")
 			token = strings.TrimPrefix(token, "Bearer ")

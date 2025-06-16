@@ -25,25 +25,6 @@ type (
 )
 
 type (
-	Player struct {
-		ID           int64          `json:"id"`
-		TeamID       pgtype.Int8    `json:"team_id"`
-		CountryCode  pgtype.Text    `json:"country_code"`
-		Age          int32          `json:"age"`
-		PositionCode string         `json:"position_code"`
-		Price        pgtype.Numeric `json:"price"`
-	}
-
-	PlayerTranslation struct {
-		ID        int64  `json:"id"`
-		PlayerID  int64  `json:"player_id"`
-		Locale    string `json:"locale"`
-		FirstName string `json:"first_name"`
-		LastName  string `json:"last_name"`
-	}
-)
-
-type (
 	Position struct {
 		Code        string `json:"code"`
 		DefaultName string `json:"default_name"`
@@ -53,5 +34,22 @@ type (
 		PositionCode string `json:"position_code"`
 		Locale       string `json:"locale"`
 		Label        string `json:"label"`
+	}
+)
+
+type (
+	Team struct {
+		ID           int64          `json:"id"`
+		UserID       int64          `json:"user_id"`
+		Name         string         `json:"name"`
+		CountryCode  pgtype.Text    `json:"country_code"`
+		Budget       pgtype.Numeric `json:"budget"`
+		TotalPlayers int32          `json:"total_players"`
+	}
+
+	TeamTranslation struct {
+		TeamID int64  `json:"team_id"`
+		Locale string `json:"locale"`
+		Name   string `json:"name"`
 	}
 )

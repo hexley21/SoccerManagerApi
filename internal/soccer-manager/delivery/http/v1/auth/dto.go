@@ -26,7 +26,7 @@ type (
 )
 
 type (
-	RefreshResponseDTO struct {
+	refreshResponseDTO struct {
 		AccessToken string `json:"access_token"`
 	} // @name RefreshResponse
 )

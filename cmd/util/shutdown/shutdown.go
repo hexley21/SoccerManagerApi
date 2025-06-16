@@ -11,7 +11,6 @@ import (
 )
 
 func NotifyShutdown(
-	ctx context.Context,
 	ctxClose context.CancelCauseFunc,
 	logger logger.Logger,
 	closer io.Closer,
@@ -19,12 +18,10 @@ func NotifyShutdown(
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
-	select {
-	case sig := <-sigCh:
+	for sig := range sigCh {
 		signal.Stop(sigCh)
 		logger.Info("caught signal", "signal", sig.String())
 		ctxClose(closer.Close())
-	case <-ctx.Done():
 		return
 	}
 }
