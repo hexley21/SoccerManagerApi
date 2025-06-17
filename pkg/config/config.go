@@ -22,6 +22,7 @@ type (
 		Globe      Globe      `yaml:"globe"`
 		Argon2     Argon2     `yaml:"argon2"`
 		Logging    Logging    `yaml:"logging"`
+		Events     Events     `yaml:"events"`
 	}
 
 	Server struct {
@@ -40,6 +41,26 @@ type (
 
 	Globe struct {
 		TTL time.Duration `yaml:"ttl"`
+	}
+
+	Events struct {
+		UserSignUp UserSignUp `yaml:"user_signup"`
+	}
+	UserSignUp struct {
+		TeamBudget     int64         `yaml:"team_budget"`
+		PlayerBudget   int64         `yaml:"player_budget"`
+		GoroutineCount int           `yaml:"goroutine_count"`
+		PlayerMinAge   int           `yaml:"player_min_age"`
+		PlayerMaxAge   int           `yaml:"player_max_age"`
+		TeamMembers    TeamMembers   `yaml:"members"`
+		Timeout        time.Duration `yaml:"timeout"`
+	}
+
+	TeamMembers struct {
+		GLK int `yaml:"goalkeepers"`
+		DEF int `yaml:"defenders"`
+		MID int `yaml:"midfielders"`
+		ATK int `yaml:"attackers"`
 	}
 
 	Postgres struct {

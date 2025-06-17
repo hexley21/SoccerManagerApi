@@ -111,7 +111,7 @@ func (h *handler) ListAllTranslations(c echo.Context) error {
 func (h *handler) CreateTranslation(c echo.Context) error {
 	var req createPlayerPositionTranslationRequestDTO
 	if err := c.Bind(&req); err != nil {
-		return echo.ErrBadRequest.WithInternal(err)
+		return err
 	}
 
 	if err := c.Validate(&req); err != nil {
@@ -146,7 +146,7 @@ func (h *handler) CreateTranslation(c echo.Context) error {
 func (h *handler) DeleteTranslation(c echo.Context) error {
 	var req deletePlayerPositionTranslationRequestDTO
 	if err := c.Bind(&req); err != nil {
-		return echo.ErrBadRequest.WithInternal(err)
+		return err
 	}
 
 	if err := c.Validate(&req); err != nil {
@@ -171,7 +171,7 @@ func (h *handler) DeleteTranslation(c echo.Context) error {
 // @Produce json
 // @Security AccessToken
 // @Param request body updatePlayerPositionTranslationRequestDTO true "Updated translation details"
-// @Success 204 "No Content"
+// @Success 200 "OK"
 // @Failure 400 {object} echo.HTTPError "Bad Request"
 // @Failure 404 {object} echo.HTTPError "Not Found"
 // @Failure 500 {object} echo.HTTPError "Internal Server Error"
@@ -179,7 +179,7 @@ func (h *handler) DeleteTranslation(c echo.Context) error {
 func (h *handler) UpdateTranslation(c echo.Context) error {
 	var req updatePlayerPositionTranslationRequestDTO
 	if err := c.Bind(&req); err != nil {
-		return echo.ErrBadRequest.WithInternal(err)
+		return err
 	}
 
 	if err := c.Validate(&req); err != nil {
@@ -194,5 +194,5 @@ func (h *handler) UpdateTranslation(c echo.Context) error {
 		return err
 	}
 
-	return c.NoContent(http.StatusNoContent)
+	return c.NoContent(http.StatusOK)
 }

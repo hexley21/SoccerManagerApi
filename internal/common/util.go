@@ -41,7 +41,9 @@ func ParsePagination(c echo.Context, defaultPageSize int32, maxPageSize int32) (
 	}
 
 	if (pageSize > maxPageSize) || (pageSize < 0) {
-		return Params{}, echo.ErrBadRequest.WithInternal(fmt.Errorf("invalid page_size: %v", pageSize))
+		return Params{}, echo.ErrBadRequest.WithInternal(
+			fmt.Errorf("invalid page_size: %v", pageSize),
+		)
 	}
 
 	return Params{

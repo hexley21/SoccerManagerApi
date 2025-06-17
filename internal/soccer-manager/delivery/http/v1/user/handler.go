@@ -120,7 +120,7 @@ func (h *handler) DeleteMe(c echo.Context) error {
 // @Accept json
 // @Security AccessToken
 // @Param request body updatePasswordRequestDTO true "Password update details"
-// @Success 204 "No Content"
+// @Success 200 "OK"
 // @Failure 400 {object} echo.HTTPError "Bad Request"
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
 // @Failure 404 {object} echo.HTTPError "Not Found"
@@ -157,5 +157,5 @@ func (h *handler) ChangePasswordMe(c echo.Context) error {
 		return err
 	}
 
-	return c.NoContent(http.StatusNoContent)
+	return c.NoContent(http.StatusOK)
 }

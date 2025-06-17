@@ -45,6 +45,8 @@ CREATE TABLE players (
   id            BIGINT PRIMARY KEY NOT NULL,
   team_id       BIGINT REFERENCES teams(id) ON DELETE SET NULL,
   country_code  VARCHAR(2) REFERENCES countries(code),
+  first_name    VARCHAR(30) NOT NULL,
+  last_name     VARCHAR(30) NOT NULL,
   age           INT NOT NULL CHECK (age >= 18 AND age <= 40),
   position_code VARCHAR(3) NOT NULL REFERENCES positions(code),
   price         NUMERIC(12,2) NOT NULL CHECK (price >= 0)

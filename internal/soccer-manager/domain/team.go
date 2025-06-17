@@ -11,4 +11,4 @@ type Team struct {
 	TotalPlayers int32           `json:"total_players"`
 }
 
-type TeamTranslation map[LocaleCode]string
+type TeamTranslation map[LocaleCode]string // @name TeamTranslation

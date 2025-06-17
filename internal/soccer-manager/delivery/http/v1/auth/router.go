@@ -6,10 +6,11 @@ import (
 )
 
 func RegisterRoutes(group *echo.Group, c *delivery.Components) {
-	h := NewHandler(
+	h := newHandler(
 		c.Services.AuthService,
 		c.JWTManagers.Access,
 		c.JWTManagers.Refresh,
+		c.EventBus,
 	)
 
 	group.POST("/login", h.Login)

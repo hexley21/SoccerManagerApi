@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"time"
 
+	evbus "github.com/asaskevich/EventBus"
 	"github.com/hexley21/soccer-manager/internal/common"
+	"github.com/hexley21/soccer-manager/internal/soccer-manager/domain"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/jwt/access"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/jwt/refresh"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/service"
@@ -18,17 +20,20 @@ type handler struct {
 	authService       service.AuthService
 	accessJWTManager  access.Manager
 	refreshJWTManager refresh.Manager
+	eventEmitter      evbus.BusPublisher
 }
 
-func NewHandler(
+func newHandler(
 	authService service.AuthService,
 	accessJWTManager access.Manager,
 	refreshJWTManager refresh.Manager,
+	eventEmitter evbus.BusPublisher,
 ) *handler {
 	return &handler{
 		authService:       authService,
 		accessJWTManager:  accessJWTManager,
 		refreshJWTManager: refreshJWTManager,
+		eventEmitter:      eventEmitter,
 	}
 }
 
@@ -47,7 +52,7 @@ func NewHandler(
 func (h *handler) Login(c echo.Context) error {
 	var req loginRequestDTO
 	if err := c.Bind(&req); err != nil {
-		return echo.ErrBadRequest.WithInternal(err)
+		return err
 	}
 
 	if err := c.Validate(&req); err != nil {
@@ -117,7 +122,7 @@ func (h *handler) Logout(c echo.Context) error {
 func (h *handler) Register(c echo.Context) error {
 	var req registerRequestDTO
 	if err := c.Bind(&req); err != nil {
-		return echo.ErrBadRequest.WithInternal(err)
+		return err
 	}
 
 	if err := c.Validate(&req); err != nil {
@@ -157,6 +162,9 @@ func (h *handler) Register(c echo.Context) error {
 	}
 
 	setCookieJWT(c, refreshCookie, refreshToken, h.refreshJWTManager.TTL())
+
+	// trigger a signup event
+	h.eventEmitter.Publish(domain.EventONSIGNUP, user.ID, req.Username)
 
 	return c.JSON(http.StatusCreated, common.NewApiResponse(registerResponseDTO{
 		AccessToken:  accessToken,

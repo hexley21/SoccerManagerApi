@@ -85,6 +85,25 @@ definitions:
         type: string
       type: object
     type: object
+  PlayerResponse:
+    properties:
+      age:
+        type: integer
+      country_code:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      last_name:
+        type: string
+      position_code:
+        $ref: '#/definitions/PlayerPositionCode'
+      price:
+        type: string
+      team_id:
+        type: string
+    type: object
   RefreshResponse:
     properties:
       access_token:
@@ -125,6 +144,10 @@ definitions:
       user_id:
         type: string
     type: object
+  TeamTranslation:
+    additionalProperties:
+      type: string
+    type: object
   UpdatePasswordRequest:
     properties:
       new_password:
@@ -134,6 +157,19 @@ definitions:
     required:
     - new_password
     - old_password
+    type: object
+  UpdatePlayerDataRequest:
+    properties:
+      country_code:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+    required:
+    - country_code
+    - first_name
+    - last_name
     type: object
   UpdatePlayerPositionTranslationRequest:
     properties:
@@ -150,12 +186,25 @@ definitions:
     - label
     - locale
     type: object
-  UpdateTeamCountryRequest:
+  UpdateTeamRequest:
     properties:
       country_code:
         type: string
+      name:
+        type: string
     required:
     - country_code
+    - name
+    type: object
+  UpdateTeamTranslationRequest:
+    properties:
+      label:
+        type: string
+      locale:
+        type: string
+    required:
+    - label
+    - locale
     type: object
   UserResponse:
     properties:
@@ -166,23 +215,9 @@ definitions:
       username:
         type: string
     type: object
-  domain.TeamTranslation:
-    additionalProperties:
-      type: string
-    type: object
   echo.HTTPError:
     properties:
       message: {}
-    type: object
-  updateTeamTranslationRequest:
-    properties:
-      label:
-        type: string
-      locale:
-        type: string
-    required:
-    - label
-    - locale
     type: object
 host: localhost:80
 info:
@@ -194,6 +229,194 @@ info:
   title: Soccer Manager
   version: 1.0.0-alpha0
 paths:
+  /players:
+    get:
+      description: Returns a paginated list of all players
+      parameters:
+      - description: Pagination cursor
+        in: query
+        name: cursor
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/PlayerResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get all players
+      tags:
+      - players
+    put:
+      consumes:
+      - application/json
+      description: Updates a player's data by ID
+      parameters:
+      - description: Player data to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/UpdatePlayerDataRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Update player data
+      tags:
+      - players
+  /players/{player_id}:
+    get:
+      description: Returns a single player's data by ID
+      parameters:
+      - description: Player ID
+        in: path
+        name: player_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/PlayerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get player by ID
+      tags:
+      - players
+  /teams/{team_id}/players:
+    get:
+      description: Returns a paginated list of players for the specified team
+      parameters:
+      - description: Team ID
+        in: path
+        name: team_id
+        required: true
+        type: integer
+      - description: Pagination cursor
+        in: query
+        name: cursor
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/PlayerResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get players by team ID
+      tags:
+      - players
+  /users/{user_id}/players:
+    get:
+      description: Returns a paginated list of players for the specified user
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: Pagination cursor
+        in: query
+        name: cursor
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/PlayerResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get players by user ID
+      tags:
+      - players
   /v1/auth/login:
     post:
       consumes:
@@ -506,8 +729,8 @@ paths:
       produces:
       - application/json
       responses:
-        "204":
-          description: No Content
+        "200":
+          description: OK
         "400":
           description: Bad Request
           schema:
@@ -622,6 +845,46 @@ paths:
       summary: Get available locales for team by ID
       tags:
       - team
+  /v1/teams/me:
+    put:
+      consumes:
+      - application/json
+      description: Updates the name and country code of the authenticated user's team
+      parameters:
+      - description: payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/UpdateTeamRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - AccessToken: []
+      summary: Update team
+      tags:
+      - team
   /v1/teams/me/translations:
     delete:
       description: Deletes a team translation for the authenticated user's team
@@ -671,7 +934,7 @@ paths:
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/domain.TeamTranslation'
+                    $ref: '#/definitions/TeamTranslation'
                   type: array
               type: object
         "401":
@@ -734,12 +997,12 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/updateTeamTranslationRequest'
+          $ref: '#/definitions/UpdateTeamTranslationRequest'
       produces:
       - application/json
       responses:
-        "204":
-          description: No Content
+        "200":
+          description: OK
         "400":
           description: Bad Request
           schema:
@@ -759,46 +1022,6 @@ paths:
       security:
       - AccessToken: []
       summary: Update team translation
-      tags:
-      - team
-  /v1/teams/me/update-country:
-    put:
-      consumes:
-      - application/json
-      description: Updates the country of the authenticated user's team
-      parameters:
-      - description: Country code
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/UpdateTeamCountryRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/echo.HTTPError'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/echo.HTTPError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/echo.HTTPError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/echo.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/echo.HTTPError'
-      security:
-      - AccessToken: []
-      summary: Update team's country
       tags:
       - team
   /v1/users:
@@ -943,8 +1166,8 @@ paths:
         schema:
           $ref: '#/definitions/UpdatePasswordRequest'
       responses:
-        "204":
-          description: No Content
+        "200":
+          description: OK
         "400":
           description: Bad Request
           schema:

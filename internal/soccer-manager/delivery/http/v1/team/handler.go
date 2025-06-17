@@ -142,23 +142,23 @@ func (h *handler) GetTeamByUserId(c echo.Context) error {
 	return c.JSON(http.StatusOK, common.NewApiResponse(TeamResponseAdapter(team)))
 }
 
-// @Summary Update team's country
-// @Description Updates the country of the authenticated user's team
+// @Summary Update team
+// @Description Updates the name and country code of the authenticated user's team
 // @Tags team
 // @Accept json
 // @Produce json
 // @Security AccessToken
-// @Param request body updateTeamCountryRequestDTO true "Country code"
+// @Param request body updateTeamRequestDTO true "payload"
 // @Success 200 {object} echo.HTTPError "OK"
 // @Failure 400 {object} echo.HTTPError "Bad Request"
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
 // @Failure 404 {object} echo.HTTPError "Not Found"
 // @Failure 500 {object} echo.HTTPError "Internal Server Error"
-// @Router /v1/teams/me/update-country [put]
+// @Router /v1/teams/me [put]
 func (h *handler) UpdateTeamCountry(c echo.Context) error {
-	var req updateTeamCountryRequestDTO
+	var req updateTeamRequestDTO
 	if err := c.Bind(&req); err != nil {
-		return echo.ErrBadRequest.WithInternal(err)
+		return err
 	}
 
 	if err := c.Validate(&req); err != nil {
@@ -175,6 +175,7 @@ func (h *handler) UpdateTeamCountry(c echo.Context) error {
 	err := h.teamService.UpdateTeamCountry(
 		c.Request().Context(),
 		userData.UserID,
+		req.Name,
 		domain.CountryCode(req.CountryCode),
 	)
 	if err != nil {
@@ -233,7 +234,7 @@ func (h *handler) GetSelfTeamTranslations(c echo.Context) error {
 func (h *handler) CreateSelfTeamTranslation(c echo.Context) error {
 	var req createTeamTranslationRequestDTO
 	if err := c.Bind(&req); err != nil {
-		return echo.ErrBadRequest.WithInternal(err)
+		return err
 	}
 
 	if err := c.Validate(&req); err != nil {
@@ -268,7 +269,7 @@ func (h *handler) CreateSelfTeamTranslation(c echo.Context) error {
 // @Produce json
 // @Security AccessToken
 // @Param request body updateTeamTranslationRequestDTO true "Translation details"
-// @Success 204 "No Content"
+// @Success 200 "OK"
 // @Failure 400 {object} echo.HTTPError "Bad Request"
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
 // @Failure 404 {object} echo.HTTPError "Not Found"
@@ -277,7 +278,7 @@ func (h *handler) CreateSelfTeamTranslation(c echo.Context) error {
 func (h *handler) UpdateSelfTeamTranslation(c echo.Context) error {
 	var req updateTeamTranslationRequestDTO
 	if err := c.Bind(&req); err != nil {
-		return echo.ErrBadRequest.WithInternal(err)
+		return err
 	}
 
 	if err := c.Validate(&req); err != nil {
@@ -298,7 +299,7 @@ func (h *handler) UpdateSelfTeamTranslation(c echo.Context) error {
 		return err
 	}
 
-	return c.NoContent(http.StatusNoContent)
+	return c.NoContent(http.StatusOK)
 }
 
 // @Summary Delete team translation
@@ -316,7 +317,7 @@ func (h *handler) UpdateSelfTeamTranslation(c echo.Context) error {
 func (h *handler) DeleteSelfTeamTranslation(c echo.Context) error {
 	var req deleteTeamTranslationRequestDTO
 	if err := c.Bind(&req); err != nil {
-		return echo.ErrBadRequest.WithInternal(err)
+		return err
 	}
 
 	if err := c.Validate(&req); err != nil {

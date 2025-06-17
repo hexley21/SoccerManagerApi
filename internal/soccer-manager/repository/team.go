@@ -12,9 +12,9 @@ type TeamRepository interface {
 	DeleteTeamByID(ctx context.Context, id int64) error
 	GetTeamByID(ctx context.Context, id int64) (Team, error)
 	GetTeamByUserID(ctx context.Context, userID int64) (Team, error)
-	InsertTeam(ctx context.Context, arg InsertTeamParams) error
+	InsertTeam(ctx context.Context, arg InsertTeamParams) (Team, error)
 	ListTeamsCursor(ctx context.Context, arg ListTeamsCursorParams) ([]Team, error)
-	UpdateTeamCountryCode(ctx context.Context, arg UpdateTeamCountryCodeParams) error
+	UpdateTeamDataByUserID(ctx context.Context, arg UpdateTeamDataByUserIDParams) error
 }
 
 type pgTeamRepository struct {
@@ -82,28 +82,47 @@ func (r *pgTeamRepository) GetTeamByUserID(ctx context.Context, userID int64) (T
 	return i, err
 }
 
-const insertTeam = `-- name: InsertTeam :exec
-INSERT INTO teams (id, user_id, name, country_code, budget, total_players) VALUES ($1, $2, $3, $4, $5, $6)
+const insertTeam = `-- name: InsertTeam :one
+INSERT INTO teams (id, user_id, name, country_code, budget, total_players) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, user_id, name, country_code, budget, total_players
 `
 
 type InsertTeamParams struct {
-	UserID       int64          `json:"user_id"`
-	Name         string         `json:"name"`
-	CountryCode  pgtype.Text    `json:"country_code"`
-	Budget       pgtype.Numeric `json:"budget"`
-	TotalPlayers int32          `json:"total_players"`
+	UserID       int64  `json:"user_id"`
+	Name         string `json:"name"`
+	CountryCode  string `json:"country_code"`
+	Budget       string `json:"budget"`
+	TotalPlayers int32  `json:"total_players"`
 }
 
-func (r *pgTeamRepository) InsertTeam(ctx context.Context, arg InsertTeamParams) error {
-	_, err := r.db.Exec(ctx, insertTeam,
+func (r *pgTeamRepository) InsertTeam(ctx context.Context, arg InsertTeamParams) (Team, error) {
+	bdg := new(pgtype.Numeric)
+	if err := bdg.Scan(arg.Budget); err != nil {
+		return Team{}, err
+	}
+
+	cc := new(pgtype.Text)
+	if err := cc.Scan(arg.CountryCode); err != nil {
+		return Team{}, err
+	}
+
+	row := r.db.QueryRow(ctx, insertTeam,
 		r.snowflakeNode.Generate().Int64(),
 		arg.UserID,
 		arg.Name,
-		arg.CountryCode,
-		arg.Budget,
+		*cc,
+		*bdg,
 		arg.TotalPlayers,
 	)
-	return err
+	var i Team
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.CountryCode,
+		&i.Budget,
+		&i.TotalPlayers,
+	)
+	return i, err
 }
 
 const listTeamsCursor = `-- name: ListTeamsCursor :many
@@ -145,25 +164,23 @@ func (r *pgTeamRepository) ListTeamsCursor(
 	return items, nil
 }
 
-const updateTeamCountryCode = `-- name: UpdateTeamCountryCode :exec
-UPDATE teams SET country_code = $2 WHERE id = $1
+const updateTeamDataByUserID = `-- name: UpdateTeamDataByUserID :exec
+UPDATE teams SET name = $2, country_code = $3 WHERE user_id = $1
 `
 
-type UpdateTeamCountryCodeParams struct {
-	ID          int64       `json:"id"`
+type UpdateTeamDataByUserIDParams struct {
+	UserID      int64       `json:"user_id"`
+	Name        string      `json:"name"`
 	CountryCode string `json:"country_code"`
 }
 
-func (r *pgTeamRepository) UpdateTeamCountryCode(
-	ctx context.Context,
-	arg UpdateTeamCountryCodeParams,
-) error {
+func (r *pgTeamRepository) UpdateTeamDataByUserID(ctx context.Context, arg UpdateTeamDataByUserIDParams) error {
 	cc := new(pgtype.Text)
 	if err := cc.Scan(arg.CountryCode); err != nil {
 		return err
 	}
-	
-	res, err := r.db.Exec(ctx, updateTeamCountryCode, arg.ID, cc)
+
+	res, err := r.db.Exec(ctx, updateTeamDataByUserID, arg.UserID, arg.Name, *cc)
 	if err != nil {
 		return err
 	}

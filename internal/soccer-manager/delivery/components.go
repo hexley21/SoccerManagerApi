@@ -1,6 +1,7 @@
 package delivery
 
 import (
+	evbus "github.com/asaskevich/EventBus"
 	"github.com/bwmarrin/snowflake"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/jwt"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/jwt/access"
@@ -23,8 +24,10 @@ type Services struct {
 	AuthService service.AuthService
 	UserService service.UserService
 
+	TeamService service.TeamService
+
 	PlayerPosService service.PlayerPositionService
-	TeamService      service.TeamService
+	PlayerService    service.PlayerService
 }
 
 type Components struct {
@@ -32,6 +35,7 @@ type Components struct {
 	Logger        echo.Logger
 	Validator     validator.Validator
 	SnowflakeNode *snowflake.Node
+	EventBus      evbus.Bus
 
 	DbPool *pgxpool.Pool
 	// redisCluster *redis.ClusterClient

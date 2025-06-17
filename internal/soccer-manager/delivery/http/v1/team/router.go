@@ -16,7 +16,7 @@ func RegisterRoutes(group *echo.Group, c *delivery.Components, m *delivery.Middl
 	
 	selfGroup := group.Group("/teams/me")
 	
-	selfGroup.PUT("/update-country", h.UpdateTeamCountry, m.JWTMiddleware)
+	selfGroup.PUT("", h.UpdateTeamCountry, m.JWTMiddleware)
 	selfGroup.GET("/translations", h.GetSelfTeamTranslations, m.JWTMiddleware)
 	selfGroup.POST("/translations", h.CreateSelfTeamTranslation, m.JWTMiddleware)
 	selfGroup.PUT("/translations", h.UpdateSelfTeamTranslation, m.JWTMiddleware)

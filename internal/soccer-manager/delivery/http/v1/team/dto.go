@@ -26,9 +26,10 @@ func TeamResponseAdapter(team domain.Team) teamResponseDTO {
 	}
 }
 
-type updateTeamCountryRequestDTO struct {
+type updateTeamRequestDTO struct {
+	Name        string             `json:"name"         validate:"required"`
 	CountryCode domain.CountryCode `json:"country_code" validate:"required,countrycode"`
-} // @name UpdateTeamCountryRequest
+} // @name UpdateTeamRequest
 
 type createTeamTranslationRequestDTO struct {
 	Locale domain.LocaleCode `json:"locale" validate:"required,localecode"`
@@ -38,7 +39,7 @@ type createTeamTranslationRequestDTO struct {
 type updateTeamTranslationRequestDTO struct {
 	Locale domain.LocaleCode `json:"locale" validate:"required,localecode"`
 	Name   string            `json:"label"  validate:"required,alphaunicode"`
-} // @name updateTeamTranslationRequest
+} // @name UpdateTeamTranslationRequest
 
 type deleteTeamTranslationRequestDTO struct {
 	Locale domain.LocaleCode `json:"locale" validate:"required,localecode"`

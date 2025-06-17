@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"strconv"
 
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/domain"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/repository"
@@ -13,6 +14,14 @@ import (
 )
 
 type TeamService interface {
+	CreateTeam(
+		ctx context.Context,
+		userId int64,
+		name string,
+		countryCode domain.CountryCode,
+		budget int64,
+	) (domain.Team, error)
+
 	GetTeams(
 		ctx context.Context,
 		locale domain.LocaleCode,
@@ -21,7 +30,12 @@ type TeamService interface {
 	) ([]domain.Team, error)
 	GetTeamById(ctx context.Context, locale domain.LocaleCode, id int64) (domain.Team, error)
 	GetTeamByUserId(ctx context.Context, locale domain.LocaleCode, id int64) (domain.Team, error)
-	UpdateTeamCountry(ctx context.Context, id int64, countryCode domain.CountryCode) error
+	UpdateTeamCountry(
+		ctx context.Context,
+		userId int64,
+		name string,
+		countryCode domain.CountryCode,
+	) error
 
 	GetTeamTranslations(ctx context.Context, userID int64) (domain.TeamTranslation, error)
 	CreateTeamTranslation(
@@ -54,6 +68,34 @@ func NewTeamService(
 		teamRepo:            teamRepo,
 		teamTranslationRepo: teamTranslationRepo,
 	}
+}
+
+func (s *teamServiceImpl) CreateTeam(
+	ctx context.Context,
+	userId int64,
+	name string,
+	countryCode domain.CountryCode,
+	budget int64,
+) (domain.Team, error) {
+	team, err := s.teamRepo.InsertTeam(ctx, repository.InsertTeamParams{
+		UserID:       userId,
+		Name:         name,
+		CountryCode:  string(countryCode),
+		Budget:       strconv.FormatInt(budget, 10),
+		TotalPlayers: 0,
+	})
+	if err != nil {
+		return domain.Team{}, err
+	}
+
+	return domain.Team{
+		ID:           team.ID,
+		UserID:       team.UserID,
+		Name:         team.Name,
+		CountryCode:  domain.CountryCode(team.CountryCode.String),
+		Budget:       decimal.NewFromBigInt(team.Budget.Int, team.Budget.Exp),
+		TotalPlayers: team.TotalPlayers,
+	}, nil
 }
 
 func (s *teamServiceImpl) GetTeams(
@@ -170,13 +212,16 @@ func (s *teamServiceImpl) GetTeamByUserId(
 	}, nil
 }
 
+// TODO: add name update
 func (s *teamServiceImpl) UpdateTeamCountry(
 	ctx context.Context,
-	id int64,
+	userId int64,
+	name string,
 	countryCode domain.CountryCode,
 ) error {
-	if err := s.teamRepo.UpdateTeamCountryCode(ctx, repository.UpdateTeamCountryCodeParams{
-		ID:          id,
+	if err := s.teamRepo.UpdateTeamDataByUserID(ctx, repository.UpdateTeamDataByUserIDParams{
+		UserID:      userId,
+		Name:        name,
 		CountryCode: string(countryCode),
 	}); err != nil {
 		if errors.Is(err, repository.ErrNotFound) {

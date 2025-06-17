@@ -18,3 +18,17 @@ argon2:
 
 globe:
   ttl: 12h
+
+events:
+  user_signup:
+    team_budget: 5000000
+    player_budget: 1000000
+    goroutine_count: 500
+    player_min_age: 18
+    player_max_age: 40
+    members:
+      goalkeepers: 3
+      defenders: 6
+      midfielders: 6
+      attackers: 5
+    timeout: 20s

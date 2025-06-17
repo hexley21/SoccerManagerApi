@@ -8,9 +8,11 @@ import (
 	"os"
 	"sync"
 
+	evbus "github.com/asaskevich/EventBus"
 	"github.com/bwmarrin/snowflake"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/delivery"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/delivery/http/v1"
+	"github.com/hexley21/soccer-manager/internal/soccer-manager/event"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/jwt/access"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/jwt/refresh"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/repository"
@@ -74,10 +76,12 @@ func NewServer(
 
 	userRepo := repository.NewUserRepo(dbPool, snowflakeNode)
 	globeRepo := repository.NewGlobeRepo(dbPool, cfg.Globe.TTL)
-	playerPosRepo := repository.NewPlayerPositionRepo(dbPool)
 
 	teamRepo := repository.NewTeamRepository(dbPool, snowflakeNode)
 	teamTranslationRepo := repository.NewTeamTranslationsRepository(dbPool)
+
+	playerPosRepo := repository.NewPlayerPositionRepo(dbPool)
+	playerRepo := repository.NewPlayerRepository(dbPool, snowflakeNode)
 
 	services := delivery.Services{
 		GlobeService: service.NewGlobeService(globeRepo),
@@ -85,9 +89,10 @@ func NewServer(
 		AuthService: service.NewAuthService(userRepo, hasher),
 		UserService: service.NewUserService(userRepo, hasher),
 
-		PlayerPosService: service.NewPlayerPositionService(playerPosRepo),
-
 		TeamService: service.NewTeamService(teamRepo, teamTranslationRepo),
+
+		PlayerPosService: service.NewPlayerPositionService(playerPosRepo),
+		PlayerService:    service.NewPlayerService(playerRepo),
 	}
 
 	jwtManagers := delivery.JWTManagers{
@@ -105,6 +110,7 @@ func NewServer(
 
 			JWTManagers: &jwtManagers,
 			Services:    &services,
+			EventBus:    evbus.New(),
 		},
 
 		mux:           &mux,
@@ -132,7 +138,7 @@ func (s *Server) Run() error {
 	s.router.Use(echo_middleware.Recover())
 
 	middlewares := delivery.Middlewares{
-		JWTMiddleware: middleware.JWTAuth(s.JWTManagers.Access),
+		JWTMiddleware:  middleware.JWTAuth(s.JWTManagers.Access),
 		IsAdmin:        middleware.IsAdmin(),
 		AcceptLanguage: middleware.AcceptLanguage(),
 	}
@@ -140,10 +146,14 @@ func (s *Server) Run() error {
 	apiGroup := s.router.Group("/api")
 
 	v1Group := apiGroup.Group("/v1")
-	v1Group.Use()
 
+	// register event handlers
+	event.RegisterEventHandlers(s.EventBus, s.Components)
+
+	// register api handlers
 	v1.RegisterRoutes(v1Group, s.Components, &middlewares)
 
+	// register metric handling
 	s.metricsRouter.GET("/metrics", echoprometheus.NewHandler())
 
 	var wg sync.WaitGroup

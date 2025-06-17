@@ -8,6 +8,8 @@ var (
 	ErrUsernameTaken = errors.New("username is taken")
 
 	ErrTeamNotFound = errors.New("team not found")
+	
+	ErrPlayerNotFound = errors.New("player not found")
 
 	ErrNonexistentCode = errors.New("nonexistent code or key")
 	

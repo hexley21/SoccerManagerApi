@@ -4,18 +4,21 @@ import (
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/delivery"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/delivery/http/v1/auth"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/delivery/http/v1/globe"
+	"github.com/hexley21/soccer-manager/internal/soccer-manager/delivery/http/v1/player"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/delivery/http/v1/player_position"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/delivery/http/v1/team"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/delivery/http/v1/user"
 	"github.com/labstack/echo/v4"
 )
 
-func RegisterRoutes(group *echo.Group, c *delivery.Components, m *delivery.Middlewares) {
-	globe.RegisterRoutes(group.Group("/globe"), c)
+func RegisterRoutes(g *echo.Group, c *delivery.Components, m *delivery.Middlewares) {
+	globe.RegisterRoutes(g.Group("/globe"), c)
 
-	auth.RegisterRoutes(group.Group("/auth"), c)
-	user.RegisterRoutes(group.Group("/users"), c, m)
+	auth.RegisterRoutes(g.Group("/auth"), c)
+	user.RegisterRoutes(g.Group("/users"), c, m)
 
-	player_position.RegisterRoutes(group.Group("/player-positions"), c, m)
-	team.RegisterRoutes(group, c, m)
+	team.RegisterRoutes(g, c, m)
+
+	player_position.RegisterRoutes(g.Group("/player-positions"), c, m)
+	player.RegisterRoutes(g, c)
 }
