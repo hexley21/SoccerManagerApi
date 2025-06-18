@@ -47,13 +47,15 @@ type (
 		UserSignUp UserSignUp `yaml:"user_signup"`
 	}
 	UserSignUp struct {
-		TeamBudget     int64         `yaml:"team_budget"`
-		PlayerBudget   int64         `yaml:"player_budget"`
-		GoroutineCount int           `yaml:"goroutine_count"`
-		PlayerMinAge   int           `yaml:"player_min_age"`
-		PlayerMaxAge   int           `yaml:"player_max_age"`
-		TeamMembers    TeamMembers   `yaml:"members"`
-		Timeout        time.Duration `yaml:"timeout"`
+		TeamBudgetFloat    float64 `yaml:"team_budget"`
+		TeamBudgetParsed   int64
+		PlayerBudgetFloat  float64 `yaml:"player_budget"`
+		PlayerBudgetParsed int64
+		GoroutineCount     int           `yaml:"goroutine_count"`
+		PlayerMinAge       int           `yaml:"player_min_age"`
+		PlayerMaxAge       int           `yaml:"player_max_age"`
+		TeamMembers        TeamMembers   `yaml:"members"`
+		Timeout            time.Duration `yaml:"timeout"`
 	}
 
 	TeamMembers struct {
@@ -152,6 +154,16 @@ func (cfg *Config) parseYaml(configDir string) error {
 
 	if (cfg.Argon2 != Argon2{}) {
 		cfg.Argon2.Breakpoint = Argon2KeylenBreakpoint(cfg.Argon2.KeyLen)
+	}
+
+	if cfg.Events.UserSignUp.PlayerBudgetFloat != 0 {
+		cfg.Events.UserSignUp.PlayerBudgetParsed = int64(
+			cfg.Events.UserSignUp.PlayerBudgetFloat * 100,
+		)
+	}
+
+	if cfg.Events.UserSignUp.TeamBudgetFloat != 0 {
+		cfg.Events.UserSignUp.TeamBudgetParsed = int64(cfg.Events.UserSignUp.TeamBudgetFloat * 100)
 	}
 
 	return nil

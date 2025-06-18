@@ -3,16 +3,15 @@ package service
 import (
 	"context"
 	"errors"
-	"strconv"
 
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/domain"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/repository"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/shopspring/decimal"
 )
 
+//go:generate mockgen -destination=mock/mock_team.go -package=mock github.com/hexley21/soccer-manager/internal/soccer-manager/service TeamService
 type TeamService interface {
 	CreateTeam(
 		ctx context.Context,
@@ -81,7 +80,7 @@ func (s *teamServiceImpl) CreateTeam(
 		UserID:       userId,
 		Name:         name,
 		CountryCode:  string(countryCode),
-		Budget:       strconv.FormatInt(budget, 10),
+		Budget:       budget,
 		TotalPlayers: 0,
 	})
 	if err != nil {
@@ -93,7 +92,7 @@ func (s *teamServiceImpl) CreateTeam(
 		UserID:       team.UserID,
 		Name:         team.Name,
 		CountryCode:  domain.CountryCode(team.CountryCode.String),
-		Budget:       decimal.NewFromBigInt(team.Budget.Int, team.Budget.Exp),
+		Budget:       team.Budget,
 		TotalPlayers: team.TotalPlayers,
 	}, nil
 }
@@ -133,7 +132,7 @@ func (s *teamServiceImpl) GetTeams(
 			UserID:       t.UserID,
 			Name:         t.Name,
 			CountryCode:  domain.CountryCode(t.CountryCode.String),
-			Budget:       decimal.NewFromBigInt(t.Budget.Int, t.Budget.Exp),
+			Budget:       t.Budget,
 			TotalPlayers: t.TotalPlayers,
 		}
 	}
@@ -141,7 +140,6 @@ func (s *teamServiceImpl) GetTeams(
 	return res, nil
 }
 
-// TODO: Add errnorows check
 func (s *teamServiceImpl) GetTeamById(
 	ctx context.Context,
 	locale domain.LocaleCode,
@@ -174,7 +172,7 @@ func (s *teamServiceImpl) GetTeamById(
 		UserID:       team.UserID,
 		Name:         team.Name,
 		CountryCode:  domain.CountryCode(team.CountryCode.String),
-		Budget:       decimal.NewFromBigInt(team.Budget.Int, team.Budget.Exp),
+		Budget:       team.Budget,
 		TotalPlayers: team.TotalPlayers,
 	}, nil
 }
@@ -207,12 +205,11 @@ func (s *teamServiceImpl) GetTeamByUserId(
 		UserID:       team.UserID,
 		Name:         team.Name,
 		CountryCode:  domain.CountryCode(team.CountryCode.String),
-		Budget:       decimal.NewFromBigInt(team.Budget.Int, team.Budget.Exp),
+		Budget:       team.Budget,
 		TotalPlayers: team.TotalPlayers,
 	}, nil
 }
 
-// TODO: add name update
 func (s *teamServiceImpl) UpdateTeamCountry(
 	ctx context.Context,
 	userId int64,

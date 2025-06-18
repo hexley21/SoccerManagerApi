@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+//go:generate mockgen -destination=mock/mock_player.go -package=mock github.com/hexley21/soccer-manager/internal/soccer-manager/repository PlayerRepository
 type PlayerRepository interface {
 	GetPlayerByID(ctx context.Context, id int64) (Player, error)
 	ListPlayersByCursor(ctx context.Context, arg ListPlayersByCursorParams) ([]Player, error)
@@ -38,7 +39,15 @@ SELECT id, team_id, country_code, first_name, last_name, age, position_code, pri
 `
 
 func (r *pgPlayerRepository) GetPlayerByID(ctx context.Context, id int64) (Player, error) {
-	row := r.db.QueryRow(ctx, getPlayerByID, id)
+	return getPlayerByIDWithQuerier(ctx, r.db, id)
+}
+
+func getPlayerByIDWithQuerier(
+	ctx context.Context,
+	querier postgres.Querier,
+	id int64,
+) (Player, error) {
+	row := querier.QueryRow(ctx, getPlayerByID, id)
 	var i Player
 	err := row.Scan(
 		&i.ID,
@@ -71,7 +80,7 @@ func (r *pgPlayerRepository) ListPlayersByCursor(
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Player
+	items := []Player{}
 	for rows.Next() {
 		var i Player
 		if err := rows.Scan(
@@ -118,7 +127,7 @@ func (r *pgPlayerRepository) ListPlayersByTeamID(
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Player
+	items := []Player{}
 	for rows.Next() {
 		var i Player
 		if err := rows.Scan(
@@ -160,7 +169,7 @@ func (r *pgPlayerRepository) ListPlayersByUserID(
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Player
+	items := []Player{}
 	for rows.Next() {
 		var i Player
 		if err := rows.Scan(
@@ -184,10 +193,10 @@ func (r *pgPlayerRepository) ListPlayersByUserID(
 }
 
 const updatePlayerNameAndCountry = `-- name: UpdatePlayerNameAndCountry :exec
-UPDATE players SET first_name = $2, last_name = $3, country_code = $4 WHERE id = $1
+UPDATE players SET first_name = $3, last_name = $4, country_code = $5 FROM teams WHERE players.team_id = teams.id AND players.id = $2 AND teams.user_id = $1
 `
-
 type UpdatePlayerNameAndCountryParams struct {
+	UserID      int64  `json:"user_id"`
 	ID          int64  `json:"id"`
 	FirstName   string `json:"first_name"`
 	LastName    string `json:"last_name"`
@@ -204,6 +213,7 @@ func (r *pgPlayerRepository) UpdatePlayerNameAndCountry(
 	}
 
 	res, err := r.db.Exec(ctx, updatePlayerNameAndCountry,
+		arg.UserID,
 		arg.ID,
 		arg.FirstName,
 		arg.LastName,
@@ -212,7 +222,6 @@ func (r *pgPlayerRepository) UpdatePlayerNameAndCountry(
 	if err != nil {
 		return err
 	}
-
 	if res.RowsAffected() == 0 {
 		return ErrNotFound
 	}
@@ -225,16 +234,29 @@ UPDATE players SET price = $2, team_id = $3 WHERE id = $1
 `
 
 type UpdatePlayerPriceAndTeamParams struct {
-	ID     int64          `json:"id"`
-	Price  pgtype.Numeric `json:"price"`
-	TeamID pgtype.Int8    `json:"team_id"`
+	ID     int64 `json:"id"`
+	Price  int64 `json:"price"`
+	TeamID int64 `json:"team_id"`
 }
 
 func (r *pgPlayerRepository) UpdatePlayerPriceAndTeam(
 	ctx context.Context,
 	arg UpdatePlayerPriceAndTeamParams,
 ) error {
-	res, err := r.db.Exec(ctx, updatePlayerPriceAndTeam, arg.ID, arg.Price, arg.TeamID)
+	return updatePlayerPriceAndTeamWithQuerrier(ctx, r.db, arg)
+}
+
+func updatePlayerPriceAndTeamWithQuerrier(
+	ctx context.Context,
+	querier postgres.Querier,
+	arg UpdatePlayerPriceAndTeamParams,
+) error {
+	tId := new(pgtype.Int8)
+	if err := tId.Scan(arg.TeamID); err != nil {
+		return err
+	}
+
+	res, err := querier.Exec(ctx, updatePlayerPriceAndTeam, arg.ID, arg.Price, *tId)
 	if err != nil {
 		return err
 	}
@@ -257,7 +279,7 @@ type InsertPlayerParams struct {
 	LastName     string `json:"last_name"`
 	Age          int32  `json:"age"`
 	PositionCode string `json:"position_code"`
-	Price        string `json:"price"`
+	Price        int64  `json:"price"`
 }
 
 func (r *pgPlayerRepository) insertPlayerWithQuerier(
@@ -274,11 +296,6 @@ func (r *pgPlayerRepository) insertPlayerWithQuerier(
 		return err
 	}
 
-	price := new(pgtype.Numeric)
-	if err := price.Scan(arg.Price); err != nil {
-		return err
-	}
-
 	_, err := querier.Exec(ctx, insertPlayer,
 		r.snowflakeNode.Generate().Int64(),
 		*tId,
@@ -287,7 +304,7 @@ func (r *pgPlayerRepository) insertPlayerWithQuerier(
 		arg.LastName,
 		arg.Age,
 		arg.PositionCode,
-		*price,
+		arg.Price,
 	)
 	return err
 }
@@ -300,7 +317,10 @@ func (r *pgPlayerRepository) InsertPlayersBatch(
 	ctx context.Context,
 	args []InsertPlayerParams,
 ) error {
-	tx, err := r.db.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
+	tx, err := r.db.BeginTx(ctx, pgx.TxOptions{
+		IsoLevel:   pgx.ReadCommitted,
+		AccessMode: pgx.ReadWrite,
+	})
 	if err != nil {
 		return err
 	}

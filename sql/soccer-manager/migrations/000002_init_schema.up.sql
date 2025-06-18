@@ -29,7 +29,7 @@ CREATE TABLE teams (
   user_id        BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   name           VARCHAR(63) NOT NULL,
   country_code   VARCHAR(2) REFERENCES countries(code),
-  budget         NUMERIC(15,2) NOT NULL CHECK (budget >= 0),
+  budget         BIGINT NOT NULL CHECK (budget >= 0),
   total_players  INT NOT NULL DEFAULT 0,
   UNIQUE(user_id)
 );
@@ -49,15 +49,15 @@ CREATE TABLE players (
   last_name     VARCHAR(30) NOT NULL,
   age           INT NOT NULL CHECK (age >= 18 AND age <= 40),
   position_code VARCHAR(3) NOT NULL REFERENCES positions(code),
-  price         NUMERIC(12,2) NOT NULL CHECK (price >= 0)
+  price         BIGINT NOT NULL CHECK (price >= 0)
 );
 
-CREATE TABLE transfer_lists (
+CREATE TABLE transfers (
   id             BIGINT PRIMARY KEY NOT NULL,
   player_id      BIGINT NOT NULL UNIQUE REFERENCES players(id) ON DELETE CASCADE,
   seller_team_id BIGINT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
-  price          NUMERIC(12,2) NOT NULL CHECK (price >= 0),
-  listed_at      TIMESTAMPTZ    NOT NULL DEFAULT now(),
+  price          BIGINT NOT NULL CHECK (price >= 0),
+  listed_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(player_id)
 );
 
@@ -66,9 +66,9 @@ CREATE TABLE transfer_records (
   player_id      BIGINT    NOT NULL REFERENCES players(id),
   seller_team_id BIGINT    NOT NULL REFERENCES teams(id),
   buyer_team_id  BIGINT    NOT NULL REFERENCES teams(id),
-  sold_price     NUMERIC(12,2) NOT NULL CHECK (sold_price >= 0),
+  sold_price     BIGINT NOT NULL CHECK (sold_price >= 0),
   listed_at      TIMESTAMPTZ NOT NULL,
-  sold_at        TIMESTAMPTZ NOT NULL
+  sold_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE OR REPLACE FUNCTION trg_players_total_players() RETURNS TRIGGER

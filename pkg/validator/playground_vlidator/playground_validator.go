@@ -6,6 +6,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/domain"
 	"github.com/hexley21/soccer-manager/pkg/logger"
+	"github.com/shopspring/decimal"
 )
 
 type playgroundValidator struct {
@@ -37,6 +38,11 @@ func New(logger logger.Logger) *playgroundValidator {
 
 	if err := validate.RegisterValidation("countrycode", countryCodeValidator); err != nil {
 		logger.Fatalf("failed to register countrycode validator: %v", err)
+	}
+
+	validate.RegisterCustomTypeFunc(registerDecimal, decimal.Decimal{})
+	if err := validate.RegisterValidation("dgte", decimalGTValidator); err != nil {
+		logger.Fatal("failed to register dgte validator")
 	}
 
 	return &playgroundValidator{validator: validate}

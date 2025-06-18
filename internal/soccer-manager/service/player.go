@@ -6,9 +6,9 @@ import (
 
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/domain"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/repository"
-	"github.com/shopspring/decimal"
 )
 
+//go:generate mockgen -destination=mock/mock_player.go -package=mock github.com/hexley21/soccer-manager/internal/soccer-manager/service PlayerService
 type PlayerService interface {
 	GetAllPlayers(
 		ctx context.Context,
@@ -21,6 +21,7 @@ type PlayerService interface {
 	) (domain.Player, error)
 	UpdatePlayerData(
 		ctx context.Context,
+		userId int64,
 		playerID int64,
 		firstName string,
 		lastName string,
@@ -87,12 +88,14 @@ func (s *playerServiceImpl) GetPlayerById(
 
 func (s *playerServiceImpl) UpdatePlayerData(
 	ctx context.Context,
+	userId int64,
 	playerID int64,
 	firstName string,
 	lastName string,
 	countryCode domain.CountryCode,
 ) error {
 	err := s.playerRepo.UpdatePlayerNameAndCountry(ctx, repository.UpdatePlayerNameAndCountryParams{
+		UserID:      userId,
 		ID:          playerID,
 		FirstName:   firstName,
 		LastName:    lastName,
@@ -162,7 +165,7 @@ type CreatePlayerArgs struct {
 	LastName     string
 	Age          int32
 	PositionCode domain.PlayerPositionCode
-	Price        decimal.Decimal
+	Price        int64
 }
 
 func NewCreatePlayerArgs(
@@ -172,7 +175,7 @@ func NewCreatePlayerArgs(
 	lastName string,
 	age int32,
 	positionCode domain.PlayerPositionCode,
-	price decimal.Decimal,
+	price int64,
 ) CreatePlayerArgs {
 	return CreatePlayerArgs{
 		TeamID:       teamID,
@@ -193,7 +196,7 @@ func (s *playerServiceImpl) CreatePlayer(ctx context.Context, arg CreatePlayerAr
 		LastName:     arg.LastName,
 		Age:          arg.Age,
 		PositionCode: string(arg.PositionCode),
-		Price:        arg.Price.StringFixed(2),
+		Price:        arg.Price,
 	})
 }
 
@@ -207,7 +210,7 @@ func (s *playerServiceImpl) CreatePlayersBatch(ctx context.Context, args []Creat
 			LastName:     a.LastName,
 			Age:          a.Age,
 			PositionCode: string(a.PositionCode),
-			Price:        a.Price.StringFixed(2),
+			Price:        a.Price,
 		}
 	}
 

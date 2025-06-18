@@ -7,6 +7,7 @@ import (
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/repository"
 )
 
+//go:generate mockgen -destination=mock/mock_globe.go -package=mock github.com/hexley21/soccer-manager/internal/soccer-manager/service GlobeService
 type GlobeService interface {
 	ListLocales(ctx context.Context) ([]domain.LocaleCode, error)
 	ListCountries(ctx context.Context) ([]domain.CountryCode, error)

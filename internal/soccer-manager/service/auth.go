@@ -12,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
+//go:generate mockgen -destination=mock/mock_auth.go -package=mock github.com/hexley21/soccer-manager/internal/soccer-manager/service AuthService
 type AuthService interface {
 	Authenticate(ctx context.Context, username string, password string) (domain.User, error)
 	CreateUser(

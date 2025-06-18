@@ -1,9 +1,7 @@
 package user
 
-import "strconv"
-
 type userResponseDTO struct {
-	ID       string `json:"id"`
+	ID       int64  `json:"id"`
 	Username string `json:"username"`
 	Role     string `json:"role"`
 } // @name UserResponse
@@ -15,7 +13,7 @@ type updatePasswordRequestDTO struct {
 
 func NewUserResponseDTO(id int64, username string, role string) userResponseDTO {
 	return userResponseDTO{
-		ID:       strconv.FormatInt(id, 10),
+		ID:       id,
 		Username: username,
 		Role:     role,
 	}

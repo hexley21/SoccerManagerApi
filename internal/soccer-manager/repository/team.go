@@ -4,10 +4,12 @@ import (
 	"context"
 
 	"github.com/bwmarrin/snowflake"
+	"github.com/hexley21/soccer-manager/pkg/infra/postgres"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+//go:generate mockgen -destination=mock/mock_team.go -package=mock github.com/hexley21/soccer-manager/internal/soccer-manager/repository TeamRepository
 type TeamRepository interface {
 	DeleteTeamByID(ctx context.Context, id int64) error
 	GetTeamByID(ctx context.Context, id int64) (Team, error)
@@ -69,7 +71,15 @@ SELECT id, user_id, name, country_code, budget, total_players FROM teams WHERE u
 `
 
 func (r *pgTeamRepository) GetTeamByUserID(ctx context.Context, userID int64) (Team, error) {
-	row := r.db.QueryRow(ctx, getTeamByUserID, userID)
+	return getTeamByUserIDWithQuerier(ctx, r.db, userID)
+}
+
+func getTeamByUserIDWithQuerier(
+	ctx context.Context,
+	querier postgres.Querier,
+	userID int64,
+) (Team, error) {
+	row := querier.QueryRow(ctx, getTeamByUserID, userID)
 	var i Team
 	err := row.Scan(
 		&i.ID,
@@ -90,16 +100,11 @@ type InsertTeamParams struct {
 	UserID       int64  `json:"user_id"`
 	Name         string `json:"name"`
 	CountryCode  string `json:"country_code"`
-	Budget       string `json:"budget"`
+	Budget       int64  `json:"budget"`
 	TotalPlayers int32  `json:"total_players"`
 }
 
 func (r *pgTeamRepository) InsertTeam(ctx context.Context, arg InsertTeamParams) (Team, error) {
-	bdg := new(pgtype.Numeric)
-	if err := bdg.Scan(arg.Budget); err != nil {
-		return Team{}, err
-	}
-
 	cc := new(pgtype.Text)
 	if err := cc.Scan(arg.CountryCode); err != nil {
 		return Team{}, err
@@ -110,7 +115,7 @@ func (r *pgTeamRepository) InsertTeam(ctx context.Context, arg InsertTeamParams)
 		arg.UserID,
 		arg.Name,
 		*cc,
-		*bdg,
+		arg.Budget,
 		arg.TotalPlayers,
 	)
 	var i Team
@@ -143,7 +148,7 @@ func (r *pgTeamRepository) ListTeamsCursor(
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Team
+	items := []Team{}
 	for rows.Next() {
 		var i Team
 		if err := rows.Scan(
@@ -169,12 +174,15 @@ UPDATE teams SET name = $2, country_code = $3 WHERE user_id = $1
 `
 
 type UpdateTeamDataByUserIDParams struct {
-	UserID      int64       `json:"user_id"`
-	Name        string      `json:"name"`
+	UserID      int64  `json:"user_id"`
+	Name        string `json:"name"`
 	CountryCode string `json:"country_code"`
 }
 
-func (r *pgTeamRepository) UpdateTeamDataByUserID(ctx context.Context, arg UpdateTeamDataByUserIDParams) error {
+func (r *pgTeamRepository) UpdateTeamDataByUserID(
+	ctx context.Context,
+	arg UpdateTeamDataByUserIDParams,
+) error {
 	cc := new(pgtype.Text)
 	if err := cc.Scan(arg.CountryCode); err != nil {
 		return err
@@ -190,4 +198,30 @@ func (r *pgTeamRepository) UpdateTeamDataByUserID(ctx context.Context, arg Updat
 	}
 
 	return nil
+}
+
+const addTeamBudget = `-- name: AddTeamBudget :exec
+UPDATE teams SET budget = budget + $2 WHERE id = $1
+`
+
+type AddTeamBudgetParams struct {
+	ID     int64 `json:"id"`
+	Budget int64 `json:"budget"`
+}
+
+func addTeamBudgetWithQuerier(
+	ctx context.Context,
+	querier postgres.Querier,
+	arg AddTeamBudgetParams,
+) error {
+	res, err := querier.Exec(ctx, addTeamBudget, arg.ID, arg.Budget)
+	if err != nil {
+		return err
+	}
+
+	if res.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+
+	return err
 }

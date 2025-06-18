@@ -9,7 +9,6 @@ import (
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/service"
 	"github.com/hexley21/soccer-manager/pkg/config"
 	"github.com/labstack/echo/v4"
-	"github.com/shopspring/decimal"
 )
 
 type userSignUpHandlerImpl struct {
@@ -29,10 +28,10 @@ func newUserSignUpHandler(
 	logger echo.Logger,
 ) *userSignUpHandlerImpl {
 	return &userSignUpHandlerImpl{
-		teamService: teamService,
+		teamService:   teamService,
 		playerService: playerService,
-		cfg:         cfg,
-		logger:      logger,
+		cfg:           cfg,
+		logger:        logger,
 
 		sem: make(chan struct{}, cfg.GoroutineCount),
 	}
@@ -63,7 +62,7 @@ func (h *userSignUpHandlerImpl) Handle(userId int64, username string) {
 		ctx, cancel := context.WithTimeout(context.Background(), h.cfg.Timeout)
 		defer cancel()
 
-		team, err := h.Createteam(ctx, userId, username, h.cfg.TeamBudget)
+		team, err := h.Createteam(ctx, userId, username, h.cfg.TeamBudgetParsed)
 		if err != nil {
 			h.logger.Errorf("failed to create teams at signup: %v", err)
 			return
@@ -75,7 +74,7 @@ func (h *userSignUpHandlerImpl) Handle(userId int64, username string) {
 			team.CountryCode,
 			h.cfg.PlayerMinAge,
 			h.cfg.PlayerMaxAge,
-			h.cfg.PlayerBudget,
+			h.cfg.PlayerBudgetParsed,
 			h.cfg.TeamMembers,
 		)
 
@@ -136,7 +135,7 @@ func buildBatchPlayers(
 				"lastname",
 				int32(rand.Intn(maxAge-minAge+1)+minAge),
 				position,
-				decimal.NewFromInt(price),
+				price,
 			)
 			players = append(players, player)
 		}

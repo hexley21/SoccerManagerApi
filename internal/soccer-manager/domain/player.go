@@ -2,7 +2,6 @@ package domain
 
 import (
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/repository"
-	"github.com/shopspring/decimal"
 )
 
 type Player struct {
@@ -13,7 +12,7 @@ type Player struct {
 	LastName     string             `json:"last_name"`
 	Age          int32              `json:"age"`
 	PositionCode PlayerPositionCode `json:"position_code"`
-	Price        decimal.Decimal    `json:"price"`
+	Price        int64    `json:"price"`
 }
 
 func PlayerAdapter(model repository.Player) Player {
@@ -25,6 +24,6 @@ func PlayerAdapter(model repository.Player) Player {
 		LastName:     model.LastName,
 		Age:          model.Age,
 		PositionCode: PlayerPositionCode(model.PositionCode),
-		Price:        decimal.NewFromBigInt(model.Price.Int, model.Price.Exp),
+		Price:        model.Price,
 	}
 }

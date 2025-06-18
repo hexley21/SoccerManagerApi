@@ -1,6 +1,8 @@
 package repository
 
-import "github.com/jackc/pgx/v5/pgtype"
+import (
+	"github.com/jackc/pgx/v5/pgtype"
+)
 
 // Globe
 type (
@@ -26,43 +28,53 @@ type (
 
 type (
 	Team struct {
-		ID           int64          `json:"id"`
-		UserID       int64          `json:"user_id"`
-		Name         string         `json:"name"`
-		CountryCode  pgtype.Text    `json:"country_code"`
-		Budget       pgtype.Numeric `json:"budget"`
-		TotalPlayers int32          `json:"total_players"`
+		ID           int64
+		UserID       int64
+		Name         string
+		CountryCode  pgtype.Text
+		Budget       int64
+		TotalPlayers int32
 	}
 
 	TeamTranslation struct {
-		TeamID int64  `json:"team_id"`
-		Locale string `json:"locale"`
-		Name   string `json:"name"`
+		TeamID int64
+		Locale string
+		Name   string
 	}
 )
 
 type (
 	Position struct {
-		Code        string `json:"code"`
-		DefaultName string `json:"default_name"`
+		Code        string
+		DefaultName string
 	}
 
 	PositionTranslation struct {
-		PositionCode string `json:"position_code"`
-		Locale       string `json:"locale"`
-		Label        string `json:"label"`
+		PositionCode string
+		Locale       string
+		Label        string
 	}
 )
 
 type (
 	Player struct {
-		ID           int64          `json:"id"`
-		TeamID       pgtype.Int8    `json:"team_id"`
-		CountryCode  pgtype.Text    `json:"country_code"`
-		FirstName    string         `json:"first_name"`
-		LastName     string         `json:"last_name"`
-		Age          int32          `json:"age"`
-		PositionCode string         `json:"position_code"`
-		Price        pgtype.Numeric `json:"price"`
+		ID           int64
+		TeamID       pgtype.Int8
+		CountryCode  pgtype.Text
+		FirstName    string
+		LastName     string
+		Age          int32
+		PositionCode string
+		Price        int64
+	}
+)
+
+type (
+	Transfer struct {
+		ID           int64
+		PlayerID     int64
+		SellerTeamID int64
+		Price        int64
+		ListedAt     pgtype.Timestamptz
 	}
 )

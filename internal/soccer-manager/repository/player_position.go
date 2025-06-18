@@ -6,6 +6,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+//go:generate mockgen -destination=mock/mock_player_position.go -package=mock github.com/hexley21/soccer-manager/internal/soccer-manager/repository PlayerPositionRepository
 type PlayerPositionRepository interface {
 	GetAllPositionCodes(ctx context.Context) ([]string, error)
 	GetAllPositions(ctx context.Context) ([]Position, error)
@@ -52,7 +53,7 @@ func (r *pgPlayerPositionRepo) GetAllPositionCodes(ctx context.Context) ([]strin
 		return nil, err
 	}
 	defer rows.Close()
-	var items []string
+	items := []string{}
 	for rows.Next() {
 		var code string
 		if err := rows.Scan(&code); err != nil {
@@ -76,7 +77,7 @@ func (r *pgPlayerPositionRepo) GetAllPositions(ctx context.Context) ([]Position,
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Position
+	items := []Position{}
 	for rows.Next() {
 		var i Position
 		if err := rows.Scan(&i.Code, &i.DefaultName); err != nil {
@@ -103,7 +104,7 @@ func (r *pgPlayerPositionRepo) GetPositionTranslationsByLocale(
 		return nil, err
 	}
 	defer rows.Close()
-	var items []PositionTranslation
+	items := []PositionTranslation{}
 	for rows.Next() {
 		var i PositionTranslation
 		if err := rows.Scan(&i.PositionCode, &i.Locale, &i.Label); err != nil {
@@ -130,7 +131,7 @@ func (r *pgPlayerPositionRepo) GetPositionTranslationsByPositionCode(
 		return nil, err
 	}
 	defer rows.Close()
-	var items []PositionTranslation
+	items := []PositionTranslation{}
 	for rows.Next() {
 		var i PositionTranslation
 		if err := rows.Scan(&i.PositionCode, &i.Locale, &i.Label); err != nil {
@@ -156,7 +157,7 @@ func (r *pgPlayerPositionRepo) GetPositionTranslations(
 		return nil, err
 	}
 	defer rows.Close()
-	var items []PositionTranslation
+	items := []PositionTranslation{}
 	for rows.Next() {
 		var i PositionTranslation
 		if err := rows.Scan(&i.PositionCode, &i.Locale, &i.Label); err != nil {

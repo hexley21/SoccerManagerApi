@@ -11,8 +11,15 @@ var (
 	
 	ErrPlayerNotFound = errors.New("player not found")
 
+	ErrTransferNotFound = errors.New("transfer not found")
+	ErrPlayerAlreadyInTransfers = errors.New("player is already in transfers")
+	ErrCantBuyFromYourself = errors.New("can't buy from yourself")
+	ErrNotEnoughFunds = errors.New("not enough funds")
+
 	ErrNonexistentCode = errors.New("nonexistent code or key")
 	
 	ErrTranslationNotFound = errors.New("translation not found")
 	ErrTranslationExists = errors.New("translation already exists")
+
+	ErrInvalidArguments = errors.New("invalid arguments")
 )

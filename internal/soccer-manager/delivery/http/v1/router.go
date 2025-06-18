@@ -7,6 +7,7 @@ import (
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/delivery/http/v1/player"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/delivery/http/v1/player_position"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/delivery/http/v1/team"
+	"github.com/hexley21/soccer-manager/internal/soccer-manager/delivery/http/v1/transfer"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/delivery/http/v1/user"
 	"github.com/labstack/echo/v4"
 )
@@ -19,6 +20,8 @@ func RegisterRoutes(g *echo.Group, c *delivery.Components, m *delivery.Middlewar
 
 	team.RegisterRoutes(g, c, m)
 
-	player_position.RegisterRoutes(g.Group("/player-positions"), c, m)
-	player.RegisterRoutes(g, c)
+	player_position.RegisterRoutes(g, c, m)
+	player.RegisterRoutes(g, c, m)
+
+	transfer.RegisterRoutes(g, c, m)
 }

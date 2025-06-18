@@ -5,7 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func RegisterRoutes(group *echo.Group, c *delivery.Components) {
+func RegisterRoutes(g *echo.Group, c *delivery.Components) {
 	h := newHandler(
 		c.Services.AuthService,
 		c.JWTManagers.Access,
@@ -13,8 +13,8 @@ func RegisterRoutes(group *echo.Group, c *delivery.Components) {
 		c.EventBus,
 	)
 
-	group.POST("/login", h.Login)
-	group.POST("/logout", h.Logout)
-	group.POST("/register", h.Register)
-	group.POST("/refresh", h.Refresh)
+	g.POST("/login", h.Login)
+	g.POST("/logout", h.Logout)
+	g.POST("/register", h.Register)
+	g.POST("/refresh", h.Refresh)
 }

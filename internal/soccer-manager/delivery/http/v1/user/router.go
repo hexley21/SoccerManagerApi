@@ -5,17 +5,17 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func RegisterRoutes(group *echo.Group, c *delivery.Components, m *delivery.Middlewares) {
+func RegisterRoutes(g *echo.Group, c *delivery.Components, m *delivery.Middlewares) {
 	h := newHandler(
 		c.Services.UserService,
 		c.Cfg.Pagination.S,
 		c.Cfg.Pagination.M,
 	)
 
-	group.GET("", h.List, m.JWTMiddleware, m.IsAdmin)
+	g.GET("", h.List, m.JWTMiddleware, m.IsAdmin)
 
-	meGroup := group.Group("/me")
-	
+	meGroup := g.Group("/me", m.JWTMiddleware)
+
 	meGroup.GET("", h.GetMe)
 	meGroup.DELETE("", h.DeleteMe)
 	meGroup.PUT("/change-password", h.ChangePasswordMe)

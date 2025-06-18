@@ -6,6 +6,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+//go:generate mockgen -destination=mock/mock_translations.go -package=mock github.com/hexley21/soccer-manager/internal/soccer-manager/repository TeamTranslationsRepository
 type TeamTranslationsRepository interface {
 	InsertTranslationByUserID(ctx context.Context, arg InsertTranslationByUserIDParams) error
 	GetTranslationsByUserID(ctx context.Context, userID int64) ([]TeamTranslation, error)
@@ -70,7 +71,7 @@ func (r *pgTeamTranslations) GetTranslationsByUserID(
 		return nil, err
 	}
 	defer rows.Close()
-	var items []TeamTranslation
+	items := []TeamTranslation{}
 	for rows.Next() {
 		var i TeamTranslation
 		if err := rows.Scan(&i.TeamID, &i.Locale, &i.Name); err != nil {
@@ -241,7 +242,7 @@ func (r *pgTeamTranslations) ListTranslatedTeamsCursor(
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Team
+	items := []Team{}
 	for rows.Next() {
 		var i Team
 		if err := rows.Scan(
@@ -275,7 +276,7 @@ func (r *pgTeamTranslations) ListLocalesByTeamID(
 		return nil, err
 	}
 	defer rows.Close()
-	var items []string
+	items := []string{}
 	for rows.Next() {
 		var locale string
 		if err := rows.Scan(&locale); err != nil {

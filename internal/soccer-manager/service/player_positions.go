@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
+//go:generate mockgen -destination=mock/mock_player_position.go -package=mock github.com/hexley21/soccer-manager/internal/soccer-manager/service PlayerPositionService
 type PlayerPositionService interface {
 	ListPositionCodes(ctx context.Context) ([]domain.PlayerPositionCode, error)
 	ListPositions(ctx context.Context) ([]domain.PlayerPosition, error)
@@ -160,7 +161,6 @@ func (s *playerPositionServiceImpl) ListPositionTranslationsByCode(
 	return res, nil
 }
 
-// TODO: validate the input!
 func (s *playerPositionServiceImpl) CreateTranslation(
 	ctx context.Context,
 	code domain.PlayerPositionCode,

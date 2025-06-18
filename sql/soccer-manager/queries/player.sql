@@ -5,7 +5,7 @@ SELECT id, team_id, country_code, first_name, last_name, age, position_code, pri
 SELECT id, team_id, country_code, first_name, last_name, age, position_code, price FROM players WHERE id = $1;
 
 -- name: UpdatePlayerNameAndCountry :exec
-UPDATE players SET first_name = $2, last_name = $3, country_code = $4 WHERE id = $1;
+UPDATE players SET first_name = $3, last_name = $4, country_code = $5 FROM teams WHERE players.team_id = teams.id AND players.id = $2 AND teams.user_id = $1;
 
 -- name: UpdatePlayerPriceAndTeam :exec
 UPDATE players SET price = $2, team_id = $3 WHERE id = $1;

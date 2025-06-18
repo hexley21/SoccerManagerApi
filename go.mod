@@ -15,7 +15,7 @@ require (
 	github.com/labstack/echo-contrib v0.17.4
 	github.com/labstack/echo/v4 v4.13.4
 	github.com/labstack/gommon v0.4.2
-	github.com/shopspring/decimal v1.4.0
+	github.com/shopspring/decimal v1.2.0
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/mock v0.5.2
 	go.uber.org/zap v1.27.0

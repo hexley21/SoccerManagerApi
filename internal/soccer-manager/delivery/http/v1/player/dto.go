@@ -1,32 +1,30 @@
 package player
 
 import (
-	"strconv"
-
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/domain"
 )
 
 type playerResponseDTO struct {
-	ID           string                    `json:"id"`
-	TeamID       string                    `json:"team_id"`
+	ID           int64                     `json:"id"`
+	TeamID       int64                     `json:"team_id"`
 	CountryCode  domain.CountryCode        `json:"country_code"`
 	FirstName    string                    `json:"first_name"`
 	LastName     string                    `json:"last_name"`
 	Age          int32                     `json:"age"`
 	PositionCode domain.PlayerPositionCode `json:"position_code"`
-	Price        string                    `json:"price"`
+	Price        int64                     `json:"price"`
 } // @name PlayerResponse
 
 func playerResponseAdapter(model domain.Player) playerResponseDTO {
 	return playerResponseDTO{
-		ID:           strconv.FormatInt(model.ID, 10),
-		TeamID:       strconv.FormatInt(model.TeamID, 10),
+		ID:           model.ID,
+		TeamID:       model.TeamID,
 		CountryCode:  model.CountryCode,
 		FirstName:    model.FirstName,
 		LastName:     model.LastName,
 		Age:          model.Age,
 		PositionCode: model.PositionCode,
-		Price:        model.Price.StringFixed(2),
+		Price:        model.Price,
 	}
 }
 

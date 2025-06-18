@@ -15,8 +15,8 @@ type (
 
 type (
 	loginRequestDTO struct {
-		Username string `json:"username" validate:"required,username"`
-		Password string `json:"password" validate:"required,password"`
+		Username string `json:"username" validate:"required"`
+		Password string `json:"password" validate:"required"`
 	} // @name LoginRequest
 
 	loginResponseDTO struct {

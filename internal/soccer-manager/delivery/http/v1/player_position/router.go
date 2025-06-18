@@ -5,16 +5,17 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func RegisterRoutes(group *echo.Group, c *delivery.Components, m *delivery.Middlewares) {
+func RegisterRoutes(g *echo.Group, c *delivery.Components, m *delivery.Middlewares) {
 	h := NewHandler(
 		c.Services.PlayerPosService,
 	)
 
-	group.GET("", h.ListTranslated, m.AcceptLanguage)
-	group.GET("/codes", h.ListCodes)
+	g.GET("/player-positions", h.ListTranslated, m.AcceptLanguage)
+	g.GET("/player-positions/codes", h.ListCodes)
 
-	group.GET("/translations", h.ListAllTranslations)
-	group.POST("/translations", h.CreateTranslation, m.JWTMiddleware, m.IsAdmin)
-	group.PUT("/translations", h.UpdateTranslation, m.JWTMiddleware, m.IsAdmin)
-	group.DELETE("/translations", h.DeleteTranslation, m.JWTMiddleware, m.IsAdmin)
+	trG := g.Group("/player-positions/translations")
+	trG.GET("/translations", h.ListAllTranslations)
+	trG.POST("/translations", h.CreateTranslation, m.JWTMiddleware, m.IsAdmin)
+	trG.PUT("/translations", h.UpdateTranslation, m.JWTMiddleware, m.IsAdmin)
+	trG.DELETE("/translations", h.DeleteTranslation, m.JWTMiddleware, m.IsAdmin)
 }

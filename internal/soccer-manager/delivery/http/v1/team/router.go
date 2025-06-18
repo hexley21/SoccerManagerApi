@@ -5,16 +5,16 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func RegisterRoutes(group *echo.Group, c *delivery.Components, m *delivery.Middlewares) {
+func RegisterRoutes(g *echo.Group, c *delivery.Components, m *delivery.Middlewares) {
 	h := newHandler(c.Services.TeamService, c.Cfg.Pagination.S, c.Cfg.Pagination.M)
 
-	group.GET("/teams", h.GetTeams, m.AcceptLanguage)
-	group.GET("/teams/:team_id", h.GetTeamById, m.AcceptLanguage)
-	group.GET("/teams/:team_id/locales", h.GetAvailableLocales)
-	group.GET("/users/:user_id/team", h.GetTeamByUserId, m.AcceptLanguage)
+	g.GET("/teams", h.GetTeams, m.AcceptLanguage)
+	g.GET("/teams/:team_id", h.GetTeamById, m.AcceptLanguage)
+	g.GET("/teams/:team_id/locales", h.GetAvailableLocales)
+	g.GET("/users/:user_id/team", h.GetTeamByUserId, m.AcceptLanguage)
 
 	
-	selfGroup := group.Group("/teams/me")
+	selfGroup := g.Group("/teams/me")
 	
 	selfGroup.PUT("", h.UpdateTeamCountry, m.JWTMiddleware)
 	selfGroup.GET("/translations", h.GetSelfTeamTranslations, m.JWTMiddleware)

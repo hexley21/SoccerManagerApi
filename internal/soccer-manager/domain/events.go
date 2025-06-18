@@ -1,5 +1,3 @@
 package domain
 
-const (
-	EventONSIGNUP = "auth.Register"
-)
+const EventONSIGNUP = "auth.Register"

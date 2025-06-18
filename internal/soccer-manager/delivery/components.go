@@ -28,6 +28,8 @@ type Services struct {
 
 	PlayerPosService service.PlayerPositionService
 	PlayerService    service.PlayerService
+
+	TransferService service.TransferService
 }
 
 type Components struct {

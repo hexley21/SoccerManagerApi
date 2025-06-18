@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+//go:generate mockgen -destination=mock/mock_user.go -package=mock github.com/hexley21/soccer-manager/internal/soccer-manager/service UserService
 type UserService interface {
 	Get(ctx context.Context, userId int64) (domain.User, error)
 	List(ctx context.Context, cursor int64, limit int32) ([]domain.User, error)

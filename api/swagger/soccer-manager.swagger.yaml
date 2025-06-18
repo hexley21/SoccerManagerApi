@@ -29,6 +29,16 @@ definitions:
     - label
     - locale
     type: object
+  CreateTransferRequest:
+    properties:
+      player_id:
+        type: integer
+      price:
+        type: number
+    required:
+    - player_id
+    - price
+    type: object
   DeleteTeamTranslationRequest:
     properties:
       locale:
@@ -94,15 +104,15 @@ definitions:
       first_name:
         type: string
       id:
-        type: string
+        type: integer
       last_name:
         type: string
       position_code:
         $ref: '#/definitions/PlayerPositionCode'
       price:
-        type: string
+        type: integer
       team_id:
-        type: string
+        type: integer
     type: object
   RefreshResponse:
     properties:
@@ -132,21 +142,34 @@ definitions:
   TeamResponse:
     properties:
       budget:
-        type: string
+        type: integer
       country_code:
         type: string
       id:
-        type: string
+        type: integer
       name:
         type: string
       total_players:
         type: integer
       user_id:
-        type: string
+        type: integer
     type: object
   TeamTranslation:
     additionalProperties:
       type: string
+    type: object
+  TransferResponse:
+    properties:
+      id:
+        type: integer
+      listed_at:
+        type: string
+      player_id:
+        type: integer
+      price:
+        type: integer
+      seller_team_id:
+        type: integer
     type: object
   UpdatePasswordRequest:
     properties:
@@ -206,10 +229,17 @@ definitions:
     - label
     - locale
     type: object
+  UpdateTransferRequest:
+    properties:
+      price:
+        type: number
+    required:
+    - price
+    type: object
   UserResponse:
     properties:
       id:
-        type: string
+        type: integer
       role:
         type: string
       username:
@@ -229,194 +259,6 @@ info:
   title: Soccer Manager
   version: 1.0.0-alpha0
 paths:
-  /players:
-    get:
-      description: Returns a paginated list of all players
-      parameters:
-      - description: Pagination cursor
-        in: query
-        name: cursor
-        type: integer
-      - description: Number of items per page
-        in: query
-        name: page_size
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/PlayerResponse'
-                  type: array
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/echo.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/echo.HTTPError'
-      summary: Get all players
-      tags:
-      - players
-    put:
-      consumes:
-      - application/json
-      description: Updates a player's data by ID
-      parameters:
-      - description: Player data to update
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/UpdatePlayerDataRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/echo.HTTPError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/echo.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/echo.HTTPError'
-      summary: Update player data
-      tags:
-      - players
-  /players/{player_id}:
-    get:
-      description: Returns a single player's data by ID
-      parameters:
-      - description: Player ID
-        in: path
-        name: player_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/PlayerResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/echo.HTTPError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/echo.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/echo.HTTPError'
-      summary: Get player by ID
-      tags:
-      - players
-  /teams/{team_id}/players:
-    get:
-      description: Returns a paginated list of players for the specified team
-      parameters:
-      - description: Team ID
-        in: path
-        name: team_id
-        required: true
-        type: integer
-      - description: Pagination cursor
-        in: query
-        name: cursor
-        type: integer
-      - description: Number of items per page
-        in: query
-        name: page_size
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/PlayerResponse'
-                  type: array
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/echo.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/echo.HTTPError'
-      summary: Get players by team ID
-      tags:
-      - players
-  /users/{user_id}/players:
-    get:
-      description: Returns a paginated list of players for the specified user
-      parameters:
-      - description: User ID
-        in: path
-        name: user_id
-        required: true
-        type: integer
-      - description: Pagination cursor
-        in: query
-        name: cursor
-        type: integer
-      - description: Number of items per page
-        in: query
-        name: page_size
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/PlayerResponse'
-                  type: array
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/echo.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/echo.HTTPError'
-      summary: Get players by user ID
-      tags:
-      - players
   /v1/auth/login:
     post:
       consumes:
@@ -447,10 +289,6 @@ paths:
             $ref: '#/definitions/echo.HTTPError'
         "401":
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/echo.HTTPError'
-        "404":
-          description: Not Found
           schema:
             $ref: '#/definitions/echo.HTTPError'
         "500":
@@ -748,6 +586,149 @@ paths:
       summary: Update translation
       tags:
       - player-positions
+  /v1/players:
+    get:
+      description: Returns a paginated list of all players
+      parameters:
+      - description: Pagination cursor
+        in: query
+        name: cursor
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/PlayerResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get all players
+      tags:
+      - players
+  /v1/players/{player_id}:
+    get:
+      description: Returns a single player's data by ID
+      parameters:
+      - description: Player ID
+        in: path
+        name: player_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/PlayerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get player by ID
+      tags:
+      - players
+    put:
+      consumes:
+      - application/json
+      description: Updates a player's data by ID
+      parameters:
+      - description: Player ID
+        in: path
+        name: player_id
+        required: true
+        type: integer
+      - description: Player data to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/UpdatePlayerDataRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - AccessToken: []
+      summary: Update player data
+      tags:
+      - players
+  /v1/players/{player_id}/transfer:
+    get:
+      description: Returns a transfer record of a player
+      parameters:
+      - description: Player ID
+        in: path
+        name: player_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/TransferResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get transfer of a player
+      tags:
+      - transfers
   /v1/teams:
     get:
       description: Returns a paginated list of teams
@@ -845,6 +826,90 @@ paths:
       summary: Get available locales for team by ID
       tags:
       - team
+  /v1/teams/{team_id}/players:
+    get:
+      description: Returns a paginated list of players for the specified team
+      parameters:
+      - description: Team ID
+        in: path
+        name: team_id
+        required: true
+        type: integer
+      - description: Pagination cursor
+        in: query
+        name: cursor
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/PlayerResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get players by team ID
+      tags:
+      - players
+  /v1/teams/{team_id}/transfers:
+    get:
+      description: Returns a list of transfers for the provided team ID (paginated)
+      parameters:
+      - description: Team ID
+        in: path
+        name: team_id
+        required: true
+        type: integer
+      - description: Pagination cursor
+        in: query
+        name: cursor
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/TransferResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: List transfers by team ID
+      tags:
+      - transfers
   /v1/teams/me:
     put:
       consumes:
@@ -1024,6 +1089,226 @@ paths:
       summary: Update team translation
       tags:
       - team
+  /v1/transfers:
+    get:
+      description: Returns a list of all transfers (paginated)
+      parameters:
+      - description: Pagination cursor
+        in: query
+        name: cursor
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/TransferResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: List all transfers
+      tags:
+      - transfers
+    post:
+      consumes:
+      - application/json
+      description: Creates a new transfer listing
+      parameters:
+      - description: Transfer details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/CreateTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  type: integer
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - AccessToken: []
+      summary: Create transfer
+      tags:
+      - transfers
+  /v1/transfers/{transfer_id}:
+    delete:
+      description: Deletes a transfer by ID
+      parameters:
+      - description: Transfer ID
+        in: path
+        name: transfer_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - AccessToken: []
+      summary: Delete transfer
+      tags:
+      - transfers
+    get:
+      description: Returns a transfer by id
+      parameters:
+      - description: Transfer ID
+        in: path
+        name: transfer_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/TransferResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get transfer with id
+      tags:
+      - transfers
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing transfer by ID
+      parameters:
+      - description: Transfer ID
+        in: path
+        name: transfer_id
+        required: true
+        type: integer
+      - description: Updated transfer info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/UpdateTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - AccessToken: []
+      summary: Update transfer
+      tags:
+      - transfers
+  /v1/transfers/{transfer_id}/buy:
+    post:
+      description: Purchases a player in a specific transfer listing
+      parameters:
+      - description: Transfer ID
+        in: path
+        name: transfer_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      security:
+      - AccessToken: []
+      summary: Buy a player
+      tags:
+      - transfers
   /v1/users:
     get:
       description: Get a paginated list of users
@@ -1063,6 +1348,48 @@ paths:
       summary: List users (ADMIN)
       tags:
       - users
+  /v1/users/{user_id}/players:
+    get:
+      description: Returns a paginated list of players for the specified user
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: Pagination cursor
+        in: query
+        name: cursor
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/PlayerResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get players by user ID
+      tags:
+      - players
   /v1/users/{user_id}/team:
     get:
       description: Returns a single team by user ID

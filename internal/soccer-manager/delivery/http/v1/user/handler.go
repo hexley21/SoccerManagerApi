@@ -69,9 +69,7 @@ func (h *handler) List(c echo.Context) error {
 func (h *handler) GetMe(c echo.Context) error {
 	userData, ok := c.Get(access.CtxKey).(access.Data)
 	if !ok {
-		err := access.NewInvalidTokenError(userData)
-		c.Logger().Error(err)
-		return echo.ErrUnauthorized.WithInternal(err)
+		return echo.ErrUnauthorized.WithInternal(access.NewInvalidTokenError(userData))
 	}
 
 	user, err := h.userService.Get(c.Request().Context(), userData.UserID)
@@ -83,7 +81,10 @@ func (h *handler) GetMe(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, common.NewApiResponse(NewUserResponseDTO(user.ID, user.Username, string(user.Role))))
+	return c.JSON(
+		http.StatusOK,
+		common.NewApiResponse(NewUserResponseDTO(user.ID, user.Username, string(user.Role))),
+	)
 }
 
 // @Summary Delete current user
@@ -98,9 +99,7 @@ func (h *handler) GetMe(c echo.Context) error {
 func (h *handler) DeleteMe(c echo.Context) error {
 	userData, ok := c.Get(access.CtxKey).(access.Data)
 	if !ok {
-		err := access.NewInvalidTokenError(userData)
-		c.Logger().Error(err)
-		return echo.ErrUnauthorized.WithInternal(err)
+		return echo.ErrUnauthorized.WithInternal(access.NewInvalidTokenError(userData))
 	}
 
 	if err := h.userService.Delete(c.Request().Context(), userData.UserID); err != nil {

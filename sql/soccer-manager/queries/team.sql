@@ -13,5 +13,8 @@ SELECT * FROM teams WHERE user_id = $1;
 -- name: UpdateTeamDataByUserID :exec
 UPDATE teams SET name = $2, country_code = $3 WHERE user_id = $1;
 
+-- name: AddTeamBudget :exec
+UPDATE teams SET budget = budget + $2 WHERE id = $1;
+
 -- name: DeleteTeamByID :exec
 DELETE FROM teams WHERE id = $1;

@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/hexley21/soccer-manager/internal/common"
+	"github.com/hexley21/soccer-manager/internal/soccer-manager/jwt/access"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/service"
 	"github.com/labstack/echo/v4"
 )
@@ -16,7 +17,7 @@ type handler struct {
 	pageLimit     int32
 }
 
-func NewHandler(playerService service.PlayerService, pageSize int32, pageLimit int32) *handler {
+func newHandler(playerService service.PlayerService, pageSize int32, pageLimit int32) *handler {
 	return &handler{
 		playerService: playerService,
 		pageSize:      pageSize,
@@ -33,7 +34,7 @@ func NewHandler(playerService service.PlayerService, pageSize int32, pageLimit i
 // @Success 200 {object} common.apiResponse{data=[]playerResponseDTO} "OK"
 // @Failure 400 {object} echo.HTTPError "Bad Request"
 // @Failure 500 {object} echo.HTTPError "Internal Server Error"
-// @Router /players [get]
+// @Router /v1/players [get]
 func (h *handler) GetAllPlayers(c echo.Context) error {
 	pagination, err := common.ParsePagination(c, h.pageSize, h.pageLimit)
 	if err != nil {
@@ -66,7 +67,7 @@ func (h *handler) GetAllPlayers(c echo.Context) error {
 // @Failure 400 {object} echo.HTTPError "Bad Request"
 // @Failure 404 {object} echo.HTTPError "Not Found"
 // @Failure 500 {object} echo.HTTPError "Internal Server Error"
-// @Router /players/{player_id} [get]
+// @Router /v1/players/{player_id} [get]
 func (h *handler) GetPlayerById(c echo.Context) error {
 	playerId, err := strconv.ParseInt(c.Param("player_id"), 10, 64)
 	if err != nil {
@@ -89,13 +90,22 @@ func (h *handler) GetPlayerById(c echo.Context) error {
 // @Tags players
 // @Accept json
 // @Produce json
+// @Param player_id path int true "Player ID"
+// @Security AccessToken
 // @Param request body updatePlayerDataRequestDTO true "Player data to update"
 // @Success 200 "OK"
 // @Failure 400 {object} echo.HTTPError "Bad Request"
 // @Failure 404 {object} echo.HTTPError "Not Found"
 // @Failure 500 {object} echo.HTTPError "Internal Server Error"
-// @Router /players [put]
+// @Router /v1/players/{player_id} [put]
 func (h *handler) UpdatePlayerData(c echo.Context) error {
+	userData, ok := c.Get(access.CtxKey).(access.Data)
+	if !ok {
+		return echo.ErrUnauthorized.WithInternal(access.NewInvalidTokenError(userData))
+	}
+
+	c.Logger().Debug(userData)
+
 	playerId, err := strconv.ParseInt(c.Param("player_id"), 10, 64)
 	if err != nil {
 		return echo.ErrBadRequest.WithInternal(err)
@@ -111,6 +121,7 @@ func (h *handler) UpdatePlayerData(c echo.Context) error {
 
 	err = h.playerService.UpdatePlayerData(
 		c.Request().Context(),
+		userData.UserID,
 		playerId,
 		req.FirstName,
 		req.LastName,
@@ -137,9 +148,9 @@ func (h *handler) UpdatePlayerData(c echo.Context) error {
 // @Success 200 {object} common.apiResponse{data=[]playerResponseDTO} "OK"
 // @Failure 400 {object} echo.HTTPError "Bad Request"
 // @Failure 500 {object} echo.HTTPError "Internal Server Error"
-// @Router /teams/{team_id}/players [get]
+// @Router /v1/teams/{team_id}/players [get]
 func (h *handler) GetPlayersByTeamId(c echo.Context) error {
-	teamId, err := strconv.ParseInt(c.Param("teamId"), 10, 64)
+	teamId, err := strconv.ParseInt(c.Param("team_id"), 10, 64)
 	if err != nil {
 		return echo.ErrBadRequest.WithInternal(err)
 	}
@@ -177,7 +188,7 @@ func (h *handler) GetPlayersByTeamId(c echo.Context) error {
 // @Success 200 {object} common.apiResponse{data=[]playerResponseDTO} "OK"
 // @Failure 400 {object} echo.HTTPError "Bad Request"
 // @Failure 500 {object} echo.HTTPError "Internal Server Error"
-// @Router /users/{user_id}/players [get]
+// @Router /v1/users/{user_id}/players [get]
 func (h *handler) GetPlayersByUserId(c echo.Context) error {
 	userId, err := strconv.ParseInt(c.Param("user_id"), 10, 64)
 	if err != nil {

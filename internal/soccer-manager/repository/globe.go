@@ -15,6 +15,7 @@ const (
 	localeCacheKey
 )
 
+//go:generate mockgen -destination=mock/mock_globa.go -package=mock github.com/hexley21/soccer-manager/internal/soccer-manager/repository GlobeRepo
 type GlobeRepo interface {
 	GetAllCountries(ctx context.Context) ([]Country, error)
 	GetAllLocales(ctx context.Context) ([]Locale, error)
@@ -52,7 +53,7 @@ func (r *pgGlobeRepo) GetAllCountries(ctx context.Context) ([]Country, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Country
+	items := []Country{}
 	for rows.Next() {
 		var i Country
 		if err := rows.Scan(&i.Code, &i.Name); err != nil {
@@ -82,7 +83,7 @@ func (r *pgGlobeRepo) GetAllLocales(ctx context.Context) ([]Locale, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Locale
+	items := []Locale{}
 	for rows.Next() {
 		var i Locale
 		if err := rows.Scan(&i.Code, &i.Name); err != nil {

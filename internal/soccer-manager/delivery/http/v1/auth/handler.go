@@ -46,7 +46,6 @@ func newHandler(
 // @Success 200 {object} common.apiResponse{data=loginResponseDTO} "OK"
 // @Failure 400 {object} echo.HTTPError "Bad Request"
 // @Failure 401 {object} echo.HTTPError "Unauthorized"
-// @Failure 404 {object} echo.HTTPError "Not Found"
 // @Failure 500 {object} echo.HTTPError "Internal Server Error"
 // @Router /v1/auth/login [post]
 func (h *handler) Login(c echo.Context) error {
@@ -63,7 +62,7 @@ func (h *handler) Login(c echo.Context) error {
 	if err != nil {
 		if errors.Is(err, service.ErrUserNotFound) {
 			c.Logger().Debug(err)
-			return echo.ErrNotFound.WithInternal(err)
+			return echo.ErrUnauthorized.WithInternal(err)
 		}
 		if errors.Is(err, service.ErrIncorrectPassword) {
 			c.Logger().Debug(err)

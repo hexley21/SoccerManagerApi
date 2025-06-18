@@ -12,7 +12,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// TODO: add team assignation on register
 type handler struct {
 	teamService service.TeamService
 	pageSize    int32

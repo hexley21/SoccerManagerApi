@@ -170,7 +170,7 @@ func (r *pgUserRepo) ListUsersCursor(
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListUsersCursorRow
+	items := []ListUsersCursorRow{}
 	for rows.Next() {
 		var i ListUsersCursorRow
 		if err := rows.Scan(&i.ID, &i.Username, &i.Role); err != nil {
