@@ -56,8 +56,11 @@ build/bash:
 	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix cgo -o ./bin/$(name) ./cmd/$(name)/main.go
 
 # Run all tests
-test: 
+test:
 	go test -cover ./internal/...
+
+generate:
+	go generate ./...
 
 build/all/bash:
 	@$(MAKE) build/linux/bash name=$(name)
