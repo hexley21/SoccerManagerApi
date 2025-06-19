@@ -51,6 +51,7 @@ func (h *handler) ListTranslated(c echo.Context) error {
 
 	locale, ok := c.Get(domain.LocaleCtxKey).(domain.LocaleCode)
 	if !ok || locale == "en" {
+		// TODO: handle translations when not available
 		positions, err = h.playerPosService.ListPositions(c.Request().Context())
 	} else {
 		positions, err = h.playerPosService.ListPositionTranslationsByLocale(

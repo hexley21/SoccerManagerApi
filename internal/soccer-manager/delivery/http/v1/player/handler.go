@@ -79,6 +79,10 @@ func (h *handler) GetPlayerById(c echo.Context) error {
 		playerId,
 	)
 	if err != nil {
+		if errors.Is(err, service.ErrPlayerNotFound) {
+			return echo.ErrNotFound.WithInternal(err)
+		}
+		
 		return err
 	}
 

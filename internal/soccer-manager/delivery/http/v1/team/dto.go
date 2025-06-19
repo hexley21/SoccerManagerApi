@@ -31,12 +31,12 @@ type updateTeamRequestDTO struct {
 
 type createTeamTranslationRequestDTO struct {
 	Locale domain.LocaleCode `json:"locale" validate:"required,localecode"`
-	Name   string            `json:"label"  validate:"required,alphaunicode"`
+	Name   string            `json:"label"  validate:"required"`
 } // @name CreateTeamTranslationRequest
 
 type updateTeamTranslationRequestDTO struct {
 	Locale domain.LocaleCode `json:"locale" validate:"required,localecode"`
-	Name   string            `json:"label"  validate:"required,alphaunicode"`
+	Name   string            `json:"label"  validate:"required"`
 } // @name UpdateTeamTranslationRequest
 
 type deleteTeamTranslationRequestDTO struct {

@@ -24,7 +24,7 @@ func NewGlobeService(globeRepo repository.GlobeRepo) *globeServiceImpl {
 func (s *globeServiceImpl) ListLocales(ctx context.Context) ([]domain.LocaleCode, error) {
 	locales, err := s.globeRepo.GetAllLocales(ctx)
 	if err != nil {
-		return []domain.LocaleCode{}, err
+		return nil, err
 	}
 
 	res := make([]domain.LocaleCode, len(locales))
@@ -39,7 +39,7 @@ func (s *globeServiceImpl) ListLocales(ctx context.Context) ([]domain.LocaleCode
 func (s *globeServiceImpl) ListCountries(ctx context.Context) ([]domain.CountryCode, error) {
 	locales, err := s.globeRepo.GetAllCountries(ctx)
 	if err != nil {
-		return []domain.CountryCode{}, err
+		return nil, err
 	}
 
 	res := make([]domain.CountryCode, len(locales))

@@ -54,12 +54,13 @@ func NewPlayerPositionService(
 	}
 }
 
+// ListPositionCodes returns a list of position codes
 func (s *playerPositionServiceImpl) ListPositionCodes(
 	ctx context.Context,
 ) ([]domain.PlayerPositionCode, error) {
 	codes, err := s.playerPositionRepo.GetAllPositionCodes(ctx)
 	if err != nil {
-		return []domain.PlayerPositionCode{}, err
+		return nil, err
 	}
 
 	res := make([]domain.PlayerPositionCode, len(codes))
@@ -71,12 +72,13 @@ func (s *playerPositionServiceImpl) ListPositionCodes(
 	return res, nil
 }
 
+// ListPositionCodes returns a list of position codes
 func (s *playerPositionServiceImpl) ListPositions(
 	ctx context.Context,
 ) ([]domain.PlayerPosition, error) {
 	positions, err := s.playerPositionRepo.GetAllPositions(ctx)
 	if err != nil {
-		return []domain.PlayerPosition{}, err
+		return nil, err
 	}
 
 	res := make([]domain.PlayerPosition, len(positions))
@@ -91,6 +93,7 @@ func (s *playerPositionServiceImpl) ListPositions(
 	return res, nil
 }
 
+// ListPositionTranslationsByLocale returns a list of translated position by locale
 func (s *playerPositionServiceImpl) ListPositionTranslationsByLocale(
 	ctx context.Context,
 	locale domain.LocaleCode,
@@ -100,7 +103,7 @@ func (s *playerPositionServiceImpl) ListPositionTranslationsByLocale(
 		string(locale),
 	)
 	if err != nil {
-		return []domain.PlayerPosition{}, err
+		return nil, err
 	}
 
 	res := make([]domain.PlayerPosition, len(translated))
@@ -115,6 +118,7 @@ func (s *playerPositionServiceImpl) ListPositionTranslationsByLocale(
 	return res, nil
 }
 
+// ListPositionTranslations returns a list of all available translations
 func (s *playerPositionServiceImpl) ListPositionTranslations(
 	ctx context.Context,
 ) ([]domain.PlayerPositionWithLocale, error) {
@@ -137,6 +141,7 @@ func (s *playerPositionServiceImpl) ListPositionTranslations(
 	return res, nil
 }
 
+// ListPositionTranslationsByCode returns a list of translations by position code
 func (s *playerPositionServiceImpl) ListPositionTranslationsByCode(
 	ctx context.Context,
 	code domain.PlayerPositionCode,
@@ -146,7 +151,7 @@ func (s *playerPositionServiceImpl) ListPositionTranslationsByCode(
 		string(code),
 	)
 	if err != nil {
-		return []domain.PlayerPosition{}, err
+		return nil, err
 	}
 
 	res := make([]domain.PlayerPosition, len(translated))
@@ -161,6 +166,10 @@ func (s *playerPositionServiceImpl) ListPositionTranslationsByCode(
 	return res, nil
 }
 
+// CreateTranslation creates a translation for provided position code
+//
+// If invalid locale - ErrNonexistentCode
+// If translation exists - ErrTranslationExists
 func (s *playerPositionServiceImpl) CreateTranslation(
 	ctx context.Context,
 	code domain.PlayerPositionCode,
@@ -179,9 +188,9 @@ func (s *playerPositionServiceImpl) CreateTranslation(
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			switch pgErr.Code {
-			case pgerrcode.ForeignKeyViolation: // Foreign key violation
+			case pgerrcode.ForeignKeyViolation:
 				return ErrNonexistentCode
-			case pgerrcode.UniqueViolation: // Unique violation
+			case pgerrcode.UniqueViolation:
 				return ErrTranslationExists
 			}
 		}
@@ -191,6 +200,9 @@ func (s *playerPositionServiceImpl) CreateTranslation(
 	return nil
 }
 
+// UpdateTranslation changes label fo provided position translation
+//
+// If translation not found - ErrTranslationNotFound
 func (s *playerPositionServiceImpl) UpdateTranslation(
 	ctx context.Context,
 	code domain.PlayerPositionCode,
@@ -216,6 +228,9 @@ func (s *playerPositionServiceImpl) UpdateTranslation(
 	return nil
 }
 
+// DeleteTranslation removes translation by code and locale
+//
+// If translation not found - ErrTranslationNotFound
 func (s *playerPositionServiceImpl) DeleteTranslation(
 	ctx context.Context,
 	code domain.PlayerPositionCode,

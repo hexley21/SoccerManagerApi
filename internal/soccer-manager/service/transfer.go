@@ -209,6 +209,13 @@ func (s *transferServiceImpl) UpdateTransferPrice(
 	return nil
 }
 
+// BuyPlayer establishes a transaction between seller and buyer
+// the player is being transfered to buyer's team
+// the transfer record is being inserted
+//
+// If transfer not found - ErrTransferNotFound
+// If buy attempt from yourself - ErrCantBuyFromYourself
+// If buy attempt without money - ErrNotEnoughFunds
 func (s *transferServiceImpl) BuyPlayer(
 	ctx context.Context,
 	transferId int64,

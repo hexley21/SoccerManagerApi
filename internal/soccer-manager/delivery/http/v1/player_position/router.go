@@ -14,8 +14,8 @@ func RegisterRoutes(g *echo.Group, c *delivery.Components, m *delivery.Middlewar
 	g.GET("/player-positions/codes", h.ListCodes)
 
 	trG := g.Group("/player-positions/translations")
-	trG.GET("/translations", h.ListAllTranslations)
-	trG.POST("/translations", h.CreateTranslation, m.JWTMiddleware, m.IsAdmin)
-	trG.PUT("/translations", h.UpdateTranslation, m.JWTMiddleware, m.IsAdmin)
-	trG.DELETE("/translations", h.DeleteTranslation, m.JWTMiddleware, m.IsAdmin)
+	trG.GET("", h.ListAllTranslations)
+	trG.POST("", h.CreateTranslation, m.JWTMiddleware, m.IsAdmin)
+	trG.PUT("", h.UpdateTranslation, m.JWTMiddleware, m.IsAdmin)
+	trG.DELETE("", h.DeleteTranslation, m.JWTMiddleware, m.IsAdmin)
 }

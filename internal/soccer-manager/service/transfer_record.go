@@ -27,6 +27,7 @@ func NewTransferRecordService(
 	}
 }
 
+// ListTransferRecords returns a list of transfers from db
 func (s *transferRecordServiceImpl) ListTransferRecords(
 	ctx context.Context,
 	id int64,
@@ -51,6 +52,9 @@ func (s *transferRecordServiceImpl) ListTransferRecords(
 	return res, nil
 }
 
+// GetTransferRecordByID returns a single transfer record by id
+//
+// If not found - ErrTransferRecordNotFound
 func (s *transferRecordServiceImpl) GetTransferRecordByID(
 	ctx context.Context,
 	id int64,

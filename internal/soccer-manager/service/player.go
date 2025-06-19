@@ -6,6 +6,7 @@ import (
 
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/domain"
 	"github.com/hexley21/soccer-manager/internal/soccer-manager/repository"
+	"github.com/jackc/pgx/v5"
 )
 
 //go:generate mockgen -destination=mock/mock_player.go -package=mock github.com/hexley21/soccer-manager/internal/soccer-manager/service PlayerService
@@ -74,18 +75,28 @@ func (s *playerServiceImpl) GetAllPlayers(
 	return res, nil
 }
 
+// GetPlayerById returns a single player by id
+//
+// If not found - ErrPlayerNotFound
 func (s *playerServiceImpl) GetPlayerById(
 	ctx context.Context,
 	playerID int64,
 ) (domain.Player, error) {
 	players, err := s.playerRepo.GetPlayerByID(ctx, playerID)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.Player{}, ErrPlayerNotFound
+		}
+
 		return domain.Player{}, err
 	}
 
 	return domain.PlayerAdapter(players), nil
 }
 
+// UpdatePlayerData updates firstname, lastname & countrycode of a team
+//
+// If not found - ErrPlayerNotFound
 func (s *playerServiceImpl) UpdatePlayerData(
 	ctx context.Context,
 	userId int64,
@@ -112,6 +123,7 @@ func (s *playerServiceImpl) UpdatePlayerData(
 	return nil
 }
 
+// GetPlayersByTeamId returns a list of players associated to the team id
 func (s *playerServiceImpl) GetPlayersByTeamId(
 	ctx context.Context,
 	teamId int64,
@@ -135,6 +147,7 @@ func (s *playerServiceImpl) GetPlayersByTeamId(
 	return res, nil
 }
 
+// GetPlayersByUserId returns a list of players associated to the user id
 func (s *playerServiceImpl) GetPlayersByUserId(
 	ctx context.Context,
 	userId int64,
@@ -188,6 +201,7 @@ func NewCreatePlayerArgs(
 	}
 }
 
+// CreatePlayersBatch - inserts single player into db
 func (s *playerServiceImpl) CreatePlayer(ctx context.Context, arg CreatePlayerArgs) error {
 	return s.playerRepo.InsertPlayer(ctx, repository.InsertPlayerParams{
 		TeamID:       arg.TeamID,
@@ -200,6 +214,7 @@ func (s *playerServiceImpl) CreatePlayer(ctx context.Context, arg CreatePlayerAr
 	})
 }
 
+// CreatePlayersBatch - inserts many players at once
 func (s *playerServiceImpl) CreatePlayersBatch(ctx context.Context, args []CreatePlayerArgs) error {
 	repoParams := make([]repository.InsertPlayerParams, len(args))
 	for i, a := range args {

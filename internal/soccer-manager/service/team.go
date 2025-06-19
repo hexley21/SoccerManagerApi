@@ -69,6 +69,7 @@ func NewTeamService(
 	}
 }
 
+// CreateTeam writes team into database
 func (s *teamServiceImpl) CreateTeam(
 	ctx context.Context,
 	userId int64,
@@ -87,16 +88,10 @@ func (s *teamServiceImpl) CreateTeam(
 		return domain.Team{}, err
 	}
 
-	return domain.Team{
-		ID:           team.ID,
-		UserID:       team.UserID,
-		Name:         team.Name,
-		CountryCode:  domain.CountryCode(team.CountryCode.String),
-		Budget:       team.Budget,
-		TotalPlayers: team.TotalPlayers,
-	}, nil
+	return domain.TeamAdapter(team), nil
 }
 
+// GetTeams returns a list of team by cursor and limit with translation
 func (s *teamServiceImpl) GetTeams(
 	ctx context.Context,
 	locale domain.LocaleCode,
@@ -122,24 +117,20 @@ func (s *teamServiceImpl) GetTeams(
 		})
 	}
 	if err != nil {
-		return []domain.Team{}, err
+		return nil, err
 	}
 
 	res := make([]domain.Team, len(teams))
 	for i, t := range teams {
-		res[i] = domain.Team{
-			ID:           t.ID,
-			UserID:       t.UserID,
-			Name:         t.Name,
-			CountryCode:  domain.CountryCode(t.CountryCode.String),
-			Budget:       t.Budget,
-			TotalPlayers: t.TotalPlayers,
-		}
+		res[i] = domain.TeamAdapter(t)
 	}
 
 	return res, nil
 }
 
+// GetTeamById returns a single record with translation
+//
+// If not found - ErrTeamNotFound
 func (s *teamServiceImpl) GetTeamById(
 	ctx context.Context,
 	locale domain.LocaleCode,
@@ -167,16 +158,12 @@ func (s *teamServiceImpl) GetTeamById(
 		return domain.Team{}, err
 	}
 
-	return domain.Team{
-		ID:           team.ID,
-		UserID:       team.UserID,
-		Name:         team.Name,
-		CountryCode:  domain.CountryCode(team.CountryCode.String),
-		Budget:       team.Budget,
-		TotalPlayers: team.TotalPlayers,
-	}, nil
+	return domain.TeamAdapter(team), nil
 }
 
+// GetTeamByUserId finds team by user id with translation
+//
+// If not found - ErrTeamNotFound
 func (s *teamServiceImpl) GetTeamByUserId(
 	ctx context.Context,
 	locale domain.LocaleCode,
@@ -197,19 +184,20 @@ func (s *teamServiceImpl) GetTeamByUserId(
 		team, err = s.teamRepo.GetTeamByUserID(ctx, id)
 	}
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.Team{}, ErrTeamNotFound
+		}
+
 		return domain.Team{}, err
 	}
 
-	return domain.Team{
-		ID:           team.ID,
-		UserID:       team.UserID,
-		Name:         team.Name,
-		CountryCode:  domain.CountryCode(team.CountryCode.String),
-		Budget:       team.Budget,
-		TotalPlayers: team.TotalPlayers,
-	}, nil
+	return domain.TeamAdapter(team), nil
 }
 
+// UpdateTeamCountry updates country value in db
+//
+// If not found - ErrTeamNotFound
+// If invalid country - ErrNonexistentCode
 func (s *teamServiceImpl) UpdateTeamCountry(
 	ctx context.Context,
 	userId int64,
@@ -236,6 +224,7 @@ func (s *teamServiceImpl) UpdateTeamCountry(
 	return nil
 }
 
+// GetTeamTranslations returns a map of translations
 func (s *teamServiceImpl) GetTeamTranslations(
 	ctx context.Context,
 	userId int64,
@@ -253,6 +242,10 @@ func (s *teamServiceImpl) GetTeamTranslations(
 	return res, nil
 }
 
+// CreateTeamTranslation inserts a translation into db
+//
+// If invalid locale - ErrNonexistentCode
+// If translation exists - ErrTranslationExists
 func (s *teamServiceImpl) CreateTeamTranslation(
 	ctx context.Context,
 	locale domain.LocaleCode,
@@ -282,6 +275,9 @@ func (s *teamServiceImpl) CreateTeamTranslation(
 	return nil
 }
 
+// UpdateTeamTranslation updates locale translation label in db
+//
+// If not found - ErrTranslationNotFound
 func (s *teamServiceImpl) UpdateTeamTranslation(
 	ctx context.Context,
 	locale domain.LocaleCode,
@@ -306,6 +302,9 @@ func (s *teamServiceImpl) UpdateTeamTranslation(
 	return nil
 }
 
+// DeleteTeamTranslation deletes locale translation from db
+//
+// If not found - ErrTranslationNotFound
 func (s *teamServiceImpl) DeleteTeamTranslation(
 	ctx context.Context,
 	locale domain.LocaleCode,
@@ -328,10 +327,11 @@ func (s *teamServiceImpl) DeleteTeamTranslation(
 	return nil
 }
 
+// GetAvailableLocales returns a list of available locale translations
 func (s *teamServiceImpl) GetAvailableLocales(ctx context.Context, teamID int64) ([]string, error) {
 	locales, err := s.teamTranslationRepo.ListLocalesByTeamID(ctx, teamID)
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
 	return locales, nil
