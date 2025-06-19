@@ -158,6 +158,23 @@ definitions:
     additionalProperties:
       type: string
     type: object
+  TransferRecordResponse:
+    properties:
+      buyer_team_id:
+        type: integer
+      id:
+        type: integer
+      listed_at:
+        type: string
+      player_id:
+        type: integer
+      seller_team_id:
+        type: integer
+      sold_at:
+        type: string
+      sold_price:
+        type: integer
+    type: object
   TransferResponse:
     properties:
       id:
@@ -1089,6 +1106,80 @@ paths:
       summary: Update team translation
       tags:
       - team
+  /v1/transfer-records:
+    get:
+      description: Returns a list of all transfer records (paginated or filtered as
+        needed)
+      parameters:
+      - description: Pagination cursor
+        in: query
+        name: cursor
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/TransferRecordResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get all transfer records
+      tags:
+      - transfer-records
+  /v1/transfer-records/{record_id}:
+    get:
+      description: Returns a single transfer record by its ID
+      parameters:
+      - description: Record ID
+        in: path
+        name: record_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/TransferRecordResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get transfer record by ID
+      tags:
+      - transfer-records
   /v1/transfers:
     get:
       description: Returns a list of all transfers (paginated)

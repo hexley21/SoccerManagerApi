@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"math/rand"
 	"time"
 
@@ -263,12 +264,20 @@ func (r *pgTransferRepository) BuyPlayer(
 	}
 
 	// 0. validation 
+	currentTransfer, err := selectTransferByIdWithQuerier(ctx, tx, transferId)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return postgres.Rollback(ctx, tx, ErrNotFound)
+		}
+
+		return postgres.Rollback(ctx, tx, err)
+	}
+
 	buyerTeam, err := getTeamByUserIDWithQuerier(ctx, tx, buyerUserId)
 	if err != nil {
 		return postgres.Rollback(ctx, tx, err)
 	}
-
-	currentTransfer, err := selectTransferByIdWithQuerier(ctx, tx, transferId)
+	
 	// make sure you are not buying from yourself
 	if currentTransfer.SellerTeamID == buyerTeam.ID {
 		return postgres.Rollback(ctx, tx, ErrConflict)
@@ -322,17 +331,17 @@ func (r *pgTransferRepository) BuyPlayer(
 		return postgres.Rollback(ctx, tx, err)
 	}
 
-	// TODO: insert transfer record
 	// 4. insert into transfer_records
-	// INSERT INTO transfer_records (id, player_id, seller_team_id, buyer_team_id, sold_price, listed_at)
-	// VALUES (
-	//     ?,
-	//     player_id,
-	//     seller_team_id,
-	//     ?,
-	//     price,
-	//     listed_at
-	// );
+	if err := insertTransferRecordWithQuerier(ctx, tx, InsertTransferRecordParams{
+		ID: r.snowflakeNode.Generate().Int64(),
+		PlayerID: player.ID,
+		SellerTeamID: currentTransfer.SellerTeamID,
+		BuyerTeamID: buyerTeam.ID,
+		SoldPrice: currentTransfer.Price,
+		ListedAt: currentTransfer.ListedAt,
+	}); err != nil {
+		return postgres.Rollback(ctx, tx, err)
+	}
 
 	return tx.Commit(ctx)
 }

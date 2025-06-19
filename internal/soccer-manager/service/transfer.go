@@ -215,6 +215,9 @@ func (s *transferServiceImpl) BuyPlayer(
 	buyerTeamId int64,
 ) error {
 	if err := s.transferRepo.BuyPlayer(ctx, transferId, buyerTeamId); err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return ErrTransferNotFound
+		}
 		if errors.Is(err, repository.ErrConflict) {
 			return ErrCantBuyFromYourself
 		}

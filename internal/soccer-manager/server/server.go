@@ -84,6 +84,7 @@ func NewServer(
 	playerRepo := repository.NewPlayerRepository(dbPool, snowflakeNode)
 
 	transferRepo := repository.NewTransferRepository(dbPool, snowflakeNode)
+	transferRecordRepo := repository.NewTransferRecordRepository(dbPool, snowflakeNode)
 
 	services := delivery.Services{
 		GlobeService: service.NewGlobeService(globeRepo),
@@ -96,7 +97,8 @@ func NewServer(
 		PlayerPosService: service.NewPlayerPositionService(playerPosRepo),
 		PlayerService:    service.NewPlayerService(playerRepo),
 
-		TransferService: service.NewTransferService(transferRepo),
+		TransferService:       service.NewTransferService(transferRepo),
+		TransferRecordService: service.NewTransferRecordService(transferRecordRepo),
 	}
 
 	jwtManagers := delivery.JWTManagers{

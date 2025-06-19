@@ -78,3 +78,15 @@ type (
 		ListedAt     pgtype.Timestamptz
 	}
 )
+
+type (
+	TransferRecord struct {
+		ID           int64
+		PlayerID     int64
+		SellerTeamID int64
+		BuyerTeamID  int64
+		SoldPrice    int64
+		ListedAt     pgtype.Timestamptz
+		SoldAt       pgtype.Timestamptz
+	}
+)

@@ -305,6 +305,9 @@ func (h *handler) BuyPlayer(c echo.Context) error {
 	}
 
 	if err := h.transferService.BuyPlayer(c.Request().Context(), transferId, userData.UserID); err != nil {
+		if errors.Is(err, service.ErrTransferNotFound) {
+			return echo.ErrNotFound.WithInternal(err)
+		}
 		if errors.Is(err, service.ErrCantBuyFromYourself) {
 			return echo.ErrConflict.WithInternal(err)
 		}

@@ -30,6 +30,7 @@ type Services struct {
 	PlayerService    service.PlayerService
 
 	TransferService service.TransferService
+	TransferRecordService service.TransferRecordService
 }
 
 type Components struct {
