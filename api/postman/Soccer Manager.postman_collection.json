@@ -4484,6 +4484,11 @@
 							{
 								"key": "Accept",
 								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"type": "text"
 							}
 						],
 						"url": {
@@ -4611,6 +4616,11 @@
 							{
 								"key": "Accept",
 								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"type": "text"
 							}
 						],
 						"url": {
@@ -6157,6 +6167,11 @@
 							{
 								"key": "Accept",
 								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"type": "text"
 							}
 						],
 						"url": {
@@ -6173,7 +6188,7 @@
 							"variable": [
 								{
 									"key": "user_id",
-									"value": "1935432422329946112",
+									"value": "1935433467760218112",
 									"description": "(Required) User ID"
 								}
 							]

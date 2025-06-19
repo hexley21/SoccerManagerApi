@@ -440,6 +440,11 @@ paths:
   /v1/player-positions:
     get:
       description: Returns a list of player positions, optionally translated by locale
+      parameters:
+      - description: ISO 639-1 locale
+        in: header
+        name: Accept-Language
+        type: string
       produces:
       - application/json
       responses:
@@ -758,6 +763,10 @@ paths:
         in: query
         name: page_size
         type: integer
+      - description: ISO 639-1 locale
+        in: header
+        name: Accept-Language
+        type: string
       produces:
       - application/json
       responses:
@@ -788,6 +797,10 @@ paths:
         name: team_id
         required: true
         type: integer
+      - description: ISO 639-1 locale
+        in: header
+        name: Accept-Language
+        type: string
       produces:
       - application/json
       responses:
@@ -1490,6 +1503,10 @@ paths:
         name: user_id
         required: true
         type: integer
+      - description: ISO 639-1 locale
+        in: header
+        name: Accept-Language
+        type: string
       produces:
       - application/json
       responses:

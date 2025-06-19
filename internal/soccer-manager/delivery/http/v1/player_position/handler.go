@@ -42,6 +42,7 @@ func (h *handler) ListCodes(c echo.Context) error {
 // @Description Returns a list of player positions, optionally translated by locale
 // @Tags player-positions
 // @Produce json
+// @Param Accept-Language header string false "ISO 639-1 locale" enum(application/json)
 // @Success 200 {object} common.apiResponse{data=playerPositionsResponseDTO} "OK"
 // @Failure 500 {object} echo.HTTPError "Internal Server Error"
 // @Router /v1/player-positions [get]

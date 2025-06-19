@@ -32,6 +32,7 @@ func newHandler(teamService service.TeamService, pageSize int32, pageLimit int32
 // @Produce json
 // @Param cursor query int false "Pagination cursor"
 // @Param page_size query int false "Number of items per page"
+// @Param Accept-Language header string false "ISO 639-1 locale" enum(application/json)
 // @Success 200 {object} common.apiResponse{data=[]teamResponseDTO} "OK"
 // @Failure 500 {object} echo.HTTPError "Internal Server Error"
 // @Router /v1/teams [get]
@@ -70,13 +71,14 @@ func (h *handler) GetTeams(c echo.Context) error {
 // @Tags team
 // @Produce json
 // @Param team_id path int true "Team ID"
+// @Param Accept-Language header string false "ISO 639-1 locale" enum(application/json)
 // @Success 200 {object} common.apiResponse{data=teamResponseDTO} "OK"
 // @Failure 400 {object} echo.HTTPError "Bad Request"
 // @Failure 404 {object} echo.HTTPError "Not Found"
 // @Failure 500 {object} echo.HTTPError "Internal Server Error"
 // @Router /v1/teams/{team_id} [get]
 func (h *handler) GetTeamById(c echo.Context) error {
-	teanID, err := strconv.ParseInt(c.Param("team_id"), 10, 64)
+	teamId, err := strconv.ParseInt(c.Param("team_id"), 10, 64)
 	if err != nil {
 		return echo.ErrBadRequest.WithInternal(err)
 	}
@@ -90,7 +92,7 @@ func (h *handler) GetTeamById(c echo.Context) error {
 	team, err := h.teamService.GetTeamById(
 		c.Request().Context(),
 		locale,
-		teanID,
+		teamId,
 	)
 	if err != nil {
 		if errors.Is(err, service.ErrTeamNotFound) {
@@ -108,6 +110,7 @@ func (h *handler) GetTeamById(c echo.Context) error {
 // @Tags team
 // @Produce json
 // @Param user_id path int true "User ID"
+// @Param Accept-Language header string false "ISO 639-1 locale" enum(application/json)
 // @Success 200 {object} common.apiResponse{data=teamResponseDTO} "OK"
 // @Failure 400 {object} echo.HTTPError "Bad Request"
 // @Failure 404 {object} echo.HTTPError "Not Found"
